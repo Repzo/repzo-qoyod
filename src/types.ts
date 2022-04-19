@@ -36,7 +36,6 @@ export interface Command {
   name: string;
 }
 
-
 export interface AvailableApp {
   _id: StringId;
   name: string;
@@ -55,21 +54,17 @@ export interface App {
   company_namespace: string[];
 }
 
-
 export interface Command {
   command: string;
   description: string;
-  name: string
+  name: string;
 }
-
-
 
 export interface Action {
   name: string;
   action: string;
   description: string;
 }
-
 
 export interface CommandEvent {
   app: App;
@@ -80,5 +75,5 @@ export interface CommandEvent {
   end_of_day: string;
   timezone: string;
   data?: any;
-  repzoEndPoint: string;
+  env: "staging" | "production";
 }
