@@ -75,6 +75,6 @@ export interface CommandEvent {
     end_of_day: string;
     timezone: string;
     data?: any;
-    repzoEndPoint: string;
+    env: "staging" | "production";
 }
 export {};
