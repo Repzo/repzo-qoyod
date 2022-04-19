@@ -37,7 +37,7 @@ let commandEvent: CommandEvent = {
   timezone: "Asia/Amman",
   meta: '{\r\n    "test":"hi"\r\n}',
   sync_id: undefined,
-  env: "staging" // ""staging|production""
+  env: "staging" // ""staging|production|local""
 };
 
 import { Commands } from "./index.js";
