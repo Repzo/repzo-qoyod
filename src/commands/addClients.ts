@@ -18,6 +18,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
     const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey);
     let clients = await repzo.client.find({ name: "" });
     clients.data[0].name;
+    if (Math.random() > 0.75) throw "Custom error for testing";
     return res?.data;
   } catch (e) {
     //@ts-ignore
