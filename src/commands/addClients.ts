@@ -1,5 +1,4 @@
 import axios from "axios";
-import Repzo from "repzo";
 import { EVENT, Config, CommandEvent } from "../types";
 
 // var config = ;
@@ -15,9 +14,6 @@ export const addClients = async (commandEvent: CommandEvent) => {
 
     console.dir(res?.data, { depth: 3 });
     console.log(commandEvent);
-    const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey);
-    let clients = await repzo.client.find({ name: "" });
-    clients.data[0].name;
     if (Math.random() > 0.75) throw "Custom error for testing";
     return res?.data;
   } catch (e) {
