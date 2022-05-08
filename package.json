@@ -43,7 +43,7 @@
     "axios": "^0.26.1",
     "data-set-query": "0.0.10",
     "jsonwebtoken": "^8.5.1",
-    "repzo": "^1.0.2",
+    "repzo": "^1.0.5",
     "uuid": "^8.3.2"
   }
 }
