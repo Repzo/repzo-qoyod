@@ -4,6 +4,8 @@
 
 ### Added
 
+- [./src/commands/tax] new Command: Tax @maramalshen
+
 ### Changed
 
 ### Fixed
