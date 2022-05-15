@@ -5,6 +5,7 @@
 ### Added
 
 - [./src/commands/tax] new Command: Tax @maramalshen
+- [./src/commands/product] implement tax key in the product @maramalshen
 
 ### Changed
 

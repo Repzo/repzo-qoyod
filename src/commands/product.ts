@@ -12,6 +12,7 @@ interface QoyodProduct {
   type: "Product"; // "Product"| "Service"| "Expense"| "RawMaterial"| "Recipe";
   unit_type: number;
   unit: string;
+  tax_id: number;
   buying_price: string; // "850.0";
   selling_price: string; // "1000.0";
   sku: string;
@@ -69,6 +70,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       selling_price: true,
       sku: true,
       barcode: true,
+      tax_id: true,
       // is_sold: true,
       // is_bought: true,
       // inventories: true, // ??????
@@ -92,6 +94,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
     const repzo_measureunits = await repzo.measureunit.find({
       per_page: 50000,
     });
+    const repzo_taxes = await repzo.tax.find({ per_page: 50000 });
 
     for (let i = 0; i < qoyod_products.products.length; i++) {
       const qoyod_product: QoyodProduct = qoyod_products.products[i];
@@ -132,6 +135,18 @@ export const addProducts = async (commandEvent: CommandEvent) => {
         continue;
       }
 
+      const tax = repzo_taxes.data.find(
+        (cate) =>
+          cate.integration_meta?.id == `${nameSpace}_${qoyod_product.tax_id}`,
+      );
+      if (!tax) {
+        console.log(
+          `Update product Failed >> Tax with integration_meta.id: ${nameSpace}_${qoyod_product.tax_id} was not found`,
+        );
+        result.failed++;
+        continue;
+      }
+
       const repzo_variant = repzo_product?.variants?.find(
         (variant) =>
           variant.integration_meta?.id == `${nameSpace}_${qoyod_product.id}`,
@@ -146,7 +161,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
         barcode: qoyod_product.barcode,
         sv_measureUnit: measureunit._id,
         description: qoyod_product.description,
-        // sv_tax: qoyod_product.tax_id,
+        sv_tax: tax._id, // qoyod_product.tax_id,
         // product_img: qoyod_product.,
         // measureunit_family: ,
         active: true,
@@ -160,6 +175,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           unit_type: qoyod_product.unit_type,
           buying_price: qoyod_product.buying_price,
           selling_price: qoyod_product.selling_price,
+          tax_id: qoyod_product.tax_id,
         },
         variants: [
           {
@@ -198,6 +214,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           selling_price: repzo_product.integration_meta?.selling_price,
           sku: repzo_product.sku,
           barcode: repzo_product.barcode,
+          tax_id: repzo_product.integration_meta?.tax_id,
         });
         if (found_identical_docs.length) continue;
         // Update
