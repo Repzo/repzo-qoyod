@@ -95,6 +95,9 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       per_page: 50000,
     });
     const repzo_taxes = await repzo.tax.find({ per_page: 50000 });
+    const repzo_measureunit_family = await repzo.measureunitFamily.find({
+      per_page: 50000,
+    });
 
     for (let i = 0; i < qoyod_products.products.length; i++) {
       const qoyod_product: QoyodProduct = qoyod_products.products[i];
@@ -125,11 +128,23 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       const measureunit = repzo_measureunits.data.find(
         (unit) =>
           unit.integration_meta?.id ==
-          `${nameSpace}_${qoyod_product.unit_type}`,
+          `${nameSpace}_${qoyod_product.unit_type}_1.0`,
       );
       if (!measureunit) {
         console.log(
           `Update product Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_product.unit_type} was not found`,
+        );
+        result.failed++;
+        continue;
+      }
+
+      const measureunit_family = repzo_measureunit_family.data.find(
+        (unit) =>
+          unit.integration_meta?.id == `${nameSpace}_${qoyod_product.sku}`,
+      );
+      if (!measureunit_family) {
+        console.log(
+          `Update product Failed >> MeasureUnit Family with integration_meta.id: ${nameSpace}_${qoyod_product.sku} was not found`,
         );
         result.failed++;
         continue;
@@ -163,7 +178,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
         description: qoyod_product.description,
         sv_tax: tax._id, // qoyod_product.tax_id,
         // product_img: qoyod_product.,
-        // measureunit_family: ,
+        measureunit_family: measureunit_family._id,
         active: true,
         rsp: Math.round(price),
         integration_meta: {
@@ -191,6 +206,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           },
         ],
       };
+
       if (!repzo_product) {
         // Create
         try {
@@ -239,7 +255,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
   }
 };
 
-const get_qoyod_products = async (
+export const get_qoyod_products = async (
   serviceEndPoint: string,
   serviceApiKey: string,
   query?: string,

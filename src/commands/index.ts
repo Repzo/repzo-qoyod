@@ -7,6 +7,7 @@ import { sync_inventory } from "./inventory.js";
 import { adjust_inventory } from "./adjust_inventory.js";
 import { sync_invoice } from "./invoice.js";
 import { sync_taxes } from "./tax.js";
+import { sync_measureunit_family } from "./measureunit_family.js";
 import { EVENT } from "./../types";
 export const commands = async (CommandEvent: CommandEvent) => {
   switch (CommandEvent.command) {
@@ -22,6 +23,8 @@ export const commands = async (CommandEvent: CommandEvent) => {
       return await sync_taxes(CommandEvent);
     case "sync_measureunit":
       return await sync_measureunits(CommandEvent);
+    case "sync_measureunit_family":
+      return await sync_measureunit_family(CommandEvent);
     case "sync_inventory":
       return await sync_inventory(CommandEvent);
     case "adjust_inventory":
@@ -57,6 +60,11 @@ export const commandsList: Command[] = [
   {
     command: "sync_measureunit",
     name: "Sync Measure Units",
+    description: "",
+  },
+  {
+    command: "sync_measureunit_family",
+    name: "Sync Measure Unit Families",
     description: "",
   },
   {

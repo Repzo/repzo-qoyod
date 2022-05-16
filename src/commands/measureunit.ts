@@ -9,7 +9,7 @@ interface QoyodUnit {
   unit_representation: string;
 }
 
-interface QoyodUnits {
+export interface QoyodUnits {
   product_unit_types: QoyodUnit[];
 }
 
@@ -38,7 +38,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
     db.load(qoyod_units?.product_unit_types);
 
     const unit_query = qoyod_units?.product_unit_types.map(
-      (unit: QoyodUnit) => `${nameSpace}_${unit.id}`,
+      (unit: QoyodUnit) => `${nameSpace}_${unit.id}_1.0`,
     ); // ??
 
     const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
@@ -64,7 +64,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
       const qoyod_unit: QoyodUnit = qoyod_units.product_unit_types[i];
       const repzo_unit = repzo_units.data.find(
         (r_unit) =>
-          r_unit.integration_meta?.id == `${nameSpace}_${qoyod_unit.id}`,
+          r_unit.integration_meta?.id == `${nameSpace}_${qoyod_unit.id}_1.0`,
       );
 
       const body = {
@@ -74,8 +74,10 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
         factor: 1,
         disabled: false,
         integration_meta: {
-          id: `${nameSpace}_${qoyod_unit.id}`,
+          id: `${nameSpace}_${qoyod_unit.id}_1.0`,
           qoyod_id: qoyod_unit.id,
+          name: qoyod_unit.unit_name,
+          factor: "1.0",
         },
       };
 
@@ -118,7 +120,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
   }
 };
 
-const get_qoyod_units = async (
+export const get_qoyod_units = async (
   serviceEndPoint: string,
   serviceApiKey: string,
   query?: string,

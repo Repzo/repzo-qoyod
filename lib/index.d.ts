@@ -8,5 +8,12 @@ export declare const Commands: (CommandEvent: import("./types.js").CommandEvent)
 } | {
     created: number;
     failed: number;
+} | {
+    qoyod_total_families: number;
+    repzo_total: number;
+    created_families: number;
+    created_secondary_units: number;
+    updated: number;
+    failed: number;
 }>;
 export declare const CommandsList: import("./types.js").Command[];
