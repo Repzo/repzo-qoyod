@@ -15,6 +15,7 @@ interface QoyodProduct {
     barcode?: string;
     is_sold: boolean;
     is_bought: boolean;
+    track_quantity: boolean;
     inventories?: {
         id: number;
         name_en: string;

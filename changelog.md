@@ -7,6 +7,7 @@
 - [./src/commands/tax] new Command: Tax @maramalshen
 - [./src/commands/product] implement tax key in the product @maramalshen
 - [./src/commands/measureunit_family.ts] new Command: Measure Unit Family @maramalshen
+- [./src/commands/product] handle product.track_quantity as product.frozen @maramalshen
 
 ### Changed
 

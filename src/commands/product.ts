@@ -19,6 +19,7 @@ interface QoyodProduct {
   barcode?: string;
   is_sold: boolean;
   is_bought: boolean;
+  track_quantity: boolean;
   inventories?: {
     id: number;
     name_en: string;
@@ -71,6 +72,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       sku: true,
       barcode: true,
       tax_id: true,
+      track_quantity: true,
       // is_sold: true,
       // is_bought: true,
       // inventories: true, // ??????
@@ -180,6 +182,8 @@ export const addProducts = async (commandEvent: CommandEvent) => {
         // product_img: qoyod_product.,
         measureunit_family: measureunit_family._id,
         active: true,
+        frozen_pre_sales: !qoyod_product.track_quantity,
+        frozen_sales: !qoyod_product.track_quantity,
         rsp: Math.round(price),
         integration_meta: {
           id: `${nameSpace}_${qoyod_product.id}`,
@@ -231,6 +235,9 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           sku: repzo_product.sku,
           barcode: repzo_product.barcode,
           tax_id: repzo_product.integration_meta?.tax_id,
+          track_quantity: !(
+            repzo_product.frozen_pre_sales || repzo_product.frozen_sales
+          ),
         });
         if (found_identical_docs.length) continue;
         // Update
