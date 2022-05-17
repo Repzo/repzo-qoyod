@@ -13,6 +13,7 @@ interface QoyodProduct {
   unit_type: number;
   unit: string;
   tax_id: number;
+  is_inclusive: boolean;
   buying_price: string; // "850.0";
   selling_price: string; // "1000.0";
   sku: string;
@@ -72,6 +73,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       sku: true,
       barcode: true,
       tax_id: true,
+      is_inclusive: true,
       track_quantity: true,
       // is_sold: true,
       // is_bought: true,
@@ -154,11 +156,18 @@ export const addProducts = async (commandEvent: CommandEvent) => {
 
       const tax = repzo_taxes.data.find(
         (cate) =>
-          cate.integration_meta?.id == `${nameSpace}_${qoyod_product.tax_id}`,
+          cate.integration_meta?.id ==
+          `${nameSpace}_${qoyod_product.tax_id}_${
+            qoyod_product.is_inclusive ? "inclusive" : "additive"
+          }`,
       );
       if (!tax) {
         console.log(
-          `Update product Failed >> Tax with integration_meta.id: ${nameSpace}_${qoyod_product.tax_id} was not found`,
+          `Update product Failed >> Tax with integration_meta.id: ${nameSpace}_${
+            qoyod_product.tax_id
+          }_${
+            qoyod_product.is_inclusive ? "inclusive" : "additive"
+          } was not found`,
         );
         result.failed++;
         continue;
@@ -195,6 +204,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           buying_price: qoyod_product.buying_price,
           selling_price: qoyod_product.selling_price,
           tax_id: qoyod_product.tax_id,
+          is_inclusive: qoyod_product.is_inclusive,
         },
         variants: [
           {
@@ -235,6 +245,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           sku: repzo_product.sku,
           barcode: repzo_product.barcode,
           tax_id: repzo_product.integration_meta?.tax_id,
+          is_inclusive: repzo_product.integration_meta?.is_inclusive,
           track_quantity: !(
             repzo_product.frozen_pre_sales || repzo_product.frozen_sales
           ),

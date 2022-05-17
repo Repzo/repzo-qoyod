@@ -1,4 +1,7 @@
-export declare const Actions: (event: import("./types.js").EVENT, options: import("./types.js").Config) => Promise<void>;
+export declare const Actions: (event: import("./types.js").EVENT, options: import("./types.js").Config) => Promise<{
+    created: number;
+    failed: number;
+}>;
 export declare const ActionsList: import("./types.js").Action[];
 export declare const Commands: (CommandEvent: import("./types.js").CommandEvent) => Promise<{
     qoyod_total: number;

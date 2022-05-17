@@ -58,6 +58,11 @@ export const commandsList: Command[] = [
     description: "",
   },
   {
+    command: "sync_tax",
+    name: "Sync Taxes",
+    description: "",
+  },
+  {
     command: "sync_measureunit",
     name: "Sync Measure Units",
     description: "",

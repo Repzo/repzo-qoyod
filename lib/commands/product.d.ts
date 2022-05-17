@@ -9,6 +9,7 @@ interface QoyodProduct {
     unit_type: number;
     unit: string;
     tax_id: number;
+    is_inclusive: boolean;
     buying_price: string;
     selling_price: string;
     sku: string;
