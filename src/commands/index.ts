@@ -6,6 +6,8 @@ import { sync_measureunits } from "./measureunit.js";
 import { sync_inventory } from "./inventory.js";
 import { adjust_inventory } from "./adjust_inventory.js";
 import { sync_invoice } from "./invoice.js";
+import { sync_taxes } from "./tax.js";
+import { sync_measureunit_family } from "./measureunit_family.js";
 import { EVENT } from "./../types";
 export const commands = async (CommandEvent: CommandEvent) => {
   switch (CommandEvent.command) {
@@ -17,8 +19,12 @@ export const commands = async (CommandEvent: CommandEvent) => {
       return await addProducts(CommandEvent);
     case "sync_category":
       return await sync_categories(CommandEvent);
+    case "sync_tax":
+      return await sync_taxes(CommandEvent);
     case "sync_measureunit":
       return await sync_measureunits(CommandEvent);
+    case "sync_measureunit_family":
+      return await sync_measureunit_family(CommandEvent);
     case "sync_inventory":
       return await sync_inventory(CommandEvent);
     case "adjust_inventory":
@@ -26,7 +32,7 @@ export const commands = async (CommandEvent: CommandEvent) => {
     case "sync_invoice":
       return await sync_invoice(CommandEvent);
     default:
-      throw "Route not found";
+      throw `Route: ${CommandEvent.command} not found`;
   }
 };
 
@@ -34,41 +40,51 @@ export const commandsList: Command[] = [
   {
     command: "add_client",
     name: "Sync Clients",
-    description: ""
+    description: "",
   },
   {
     command: "update_disable_client",
-    name: "Sync Disabled Cleints",
-    description: ""
+    name: "Sync Disabled Clients",
+    description: "",
   },
   {
     command: "add_product",
     name: "Sync Products",
-    description: ""
+    description: "",
   },
   {
     command: "sync_category",
     name: "Sync Product Category",
-    description: ""
+    description: "",
+  },
+  {
+    command: "sync_tax",
+    name: "Sync Taxes",
+    description: "",
   },
   {
     command: "sync_measureunit",
     name: "Sync Measure Units",
-    description: ""
+    description: "",
+  },
+  {
+    command: "sync_measureunit_family",
+    name: "Sync Measure Unit Families",
+    description: "",
   },
   {
     command: "sync_inventory",
     name: "Sync Inventory",
-    description: ""
+    description: "",
   },
   {
     command: "adjust_inventory",
-    name: "Adjust Inevntory",
-    description: ""
+    name: "Adjust Inventory",
+    description: "",
   },
   {
     command: "sync_invoice",
     name: "Sync Invoice",
-    description: ""
-  }
+    description: "",
+  },
 ];

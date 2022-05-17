@@ -3,6 +3,7 @@ export interface Config {
     data?: any;
     repzoEndPoint: string;
     serviceEndPoint: string;
+    env: "staging" | "local" | "production";
 }
 declare type DecodedScope = "admin" | "client" | "rep";
 declare type StringId = string;

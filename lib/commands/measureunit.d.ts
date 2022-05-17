@@ -1,4 +1,12 @@
 import { CommandEvent } from "../types";
+interface QoyodUnit {
+    id: number;
+    unit_name: string;
+    unit_representation: string;
+}
+export interface QoyodUnits {
+    product_unit_types: QoyodUnit[];
+}
 export declare const sync_measureunits: (commandEvent: CommandEvent) => Promise<{
     qoyod_total: number;
     repzo_total: number;
@@ -6,3 +14,5 @@ export declare const sync_measureunits: (commandEvent: CommandEvent) => Promise<
     updated: number;
     failed: number;
 }>;
+export declare const get_qoyod_units: (serviceEndPoint: string, serviceApiKey: string, query?: string | undefined) => Promise<QoyodUnits>;
+export {};
