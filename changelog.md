@@ -9,6 +9,7 @@
 - [./src/commands/measureunit_family.ts] new Command: Measure Unit Family @maramalshen
 - [./src/commands/product] handle product.track_quantity as product.frozen @maramalshen
 - [./src/actions/create_invoice] create invoice in Qoyod @maramalshen
+- [./src/actions/create_payment] create payment in Qoyod @maramalshen
 
 ### Changed
 

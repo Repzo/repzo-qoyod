@@ -44,9 +44,7 @@ export const create_invoice = async (event: EVENT, options: Config) => {
     const result = { created: 0, failed: 0 };
 
     const repzo = new Repzo(options.data?.repzoApiKey, { env: options.env });
-    const repzo_invoice = body; // await repzo.invoice.get(invoice_id, { populatedKeys: ["client"] });
-    if (!repzo_invoice)
-      throw new Error(`Invoice with _id: ${repzo_invoice} was not found`);
+    const repzo_invoice = body;
 
     const qoyod_client = await repzo.client.get(repzo_invoice.client_id);
     if (!qoyod_client.integration_meta?.qoyod_id)

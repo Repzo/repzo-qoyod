@@ -2,10 +2,13 @@ import { Command, CommandEvent } from "./../types";
 export declare const commands: (CommandEvent: CommandEvent) => Promise<{
     qoyod_total: number;
     repzo_total: number;
-    disabled: number;
+    created: number;
+    updated: number;
     failed: number;
 } | {
-    created: number;
+    qoyod_total: number;
+    repzo_total: number;
+    disabled: number;
     failed: number;
 } | {
     qoyod_total_families: number;

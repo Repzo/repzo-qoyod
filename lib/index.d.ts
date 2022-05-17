@@ -6,10 +6,13 @@ export declare const ActionsList: import("./types.js").Action[];
 export declare const Commands: (CommandEvent: import("./types.js").CommandEvent) => Promise<{
     qoyod_total: number;
     repzo_total: number;
-    disabled: number;
+    created: number;
+    updated: number;
     failed: number;
 } | {
-    created: number;
+    qoyod_total: number;
+    repzo_total: number;
+    disabled: number;
     failed: number;
 } | {
     qoyod_total_families: number;

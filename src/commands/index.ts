@@ -5,7 +5,6 @@ import { sync_categories } from "./category.js";
 import { sync_measureunits } from "./measureunit.js";
 import { sync_inventory } from "./inventory.js";
 import { adjust_inventory } from "./adjust_inventory.js";
-import { sync_invoice } from "./invoice.js";
 import { sync_taxes } from "./tax.js";
 import { sync_measureunit_family } from "./measureunit_family.js";
 import { EVENT } from "./../types";
@@ -29,8 +28,6 @@ export const commands = async (CommandEvent: CommandEvent) => {
       return await sync_inventory(CommandEvent);
     case "adjust_inventory":
       return await adjust_inventory(CommandEvent);
-    case "sync_invoice":
-      return await sync_invoice(CommandEvent);
     default:
       throw `Route: ${CommandEvent.command} not found`;
   }
@@ -80,11 +77,6 @@ export const commandsList: Command[] = [
   {
     command: "adjust_inventory",
     name: "Adjust Inventory",
-    description: "",
-  },
-  {
-    command: "sync_invoice",
-    name: "Sync Invoice",
     description: "",
   },
 ];
