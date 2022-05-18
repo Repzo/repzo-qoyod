@@ -1,7 +1,14 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
 import { EVENT, Config, CommandEvent } from "../types";
-import { _fetch, _create, _update, _delete } from "../util.js";
+import {
+  _fetch,
+  _create,
+  _update,
+  _delete,
+  update_bench_time,
+  updateAt_query,
+} from "../util.js";
 // var config = ;
 
 interface QoyodClient {
@@ -21,6 +28,9 @@ interface QoyodClients {
 export const addClients = async (commandEvent: CommandEvent) => {
   try {
     console.log("addClients");
+    const new_bench_time = new Date().toISOString();
+    const bench_time_key = "bench_time_client";
+
     const nameSpace = commandEvent.nameSpace.join("_");
     const result = {
       qoyod_total: 0,
@@ -29,10 +39,15 @@ export const addClients = async (commandEvent: CommandEvent) => {
       updated: 0,
       failed: 0,
     };
+
     const qoyod_clients: QoyodClients = await get_qoyod_clients(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
-      "?q[status_eq]=Active",
+      updateAt_query(
+        "?q[status_eq]=Active",
+        commandEvent.app.options_formData,
+        bench_time_key,
+      ),
     );
     result.qoyod_total = qoyod_clients?.customers?.length;
 
@@ -112,6 +127,14 @@ export const addClients = async (commandEvent: CommandEvent) => {
     }
 
     console.log(result);
+
+    await update_bench_time(
+      repzo,
+      commandEvent.app._id,
+      bench_time_key,
+      new_bench_time,
+    );
+
     return result;
   } catch (e: any) {
     //@ts-ignore
@@ -123,6 +146,9 @@ export const addClients = async (commandEvent: CommandEvent) => {
 export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
   try {
     console.log("updatedInactiveClients");
+    const new_bench_time = new Date().toISOString();
+    const bench_time_key = "bench_time_disabled_client";
+
     const nameSpace = commandEvent.nameSpace.join("_");
     const result = {
       qoyod_total: 0,
@@ -130,10 +156,15 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       disabled: 0,
       failed: 0,
     };
+
     const qoyod_clients: QoyodClients = await get_qoyod_clients(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
-      "?q[status_eq]=Inactive",
+      updateAt_query(
+        "?q[status_eq]=Inactive",
+        commandEvent.app.options_formData,
+        bench_time_key,
+      ),
     );
     result.qoyod_total = qoyod_clients?.customers?.length;
     const client_meta = qoyod_clients?.customers.map(
@@ -166,6 +197,14 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
     }
 
     console.log(result);
+
+    await update_bench_time(
+      repzo,
+      commandEvent.app._id,
+      bench_time_key,
+      new_bench_time,
+    );
+
     return result;
   } catch (e) {
     //@ts-ignore

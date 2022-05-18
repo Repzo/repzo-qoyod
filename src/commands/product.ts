@@ -1,7 +1,14 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
 import { EVENT, Config, CommandEvent } from "../types";
-import { _fetch, _create, _update, _delete } from "../util.js";
+import {
+  _fetch,
+  _create,
+  _update,
+  _delete,
+  update_bench_time,
+  updateAt_query,
+} from "../util.js";
 
 interface QoyodProduct {
   id: number;
@@ -45,6 +52,10 @@ interface QoyodProducts {
 export const addProducts = async (commandEvent: CommandEvent) => {
   try {
     console.log("addProducts");
+
+    const new_bench_time = new Date().toISOString();
+    const bench_time_key = "bench_time_product";
+
     const nameSpace = commandEvent.nameSpace.join("_");
     const result = {
       qoyod_total: 0,
@@ -53,9 +64,11 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       updated: 0,
       failed: 0,
     };
+
     const qoyod_products: QoyodProducts = await get_qoyod_products(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
+      updateAt_query("", commandEvent.app.options_formData, bench_time_key),
     );
     result.qoyod_total = qoyod_products?.products?.length;
     const db = new DataSet([], { autoIndex: false });
@@ -264,7 +277,16 @@ export const addProducts = async (commandEvent: CommandEvent) => {
         }
       }
     }
+
     console.log(result);
+
+    await update_bench_time(
+      repzo,
+      commandEvent.app._id,
+      bench_time_key,
+      new_bench_time,
+    );
+
     return result;
   } catch (e: any) {
     //@ts-ignore

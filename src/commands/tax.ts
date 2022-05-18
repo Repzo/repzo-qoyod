@@ -1,7 +1,13 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
 import { EVENT, Config, CommandEvent } from "../types";
-import { _fetch, _create, _update, _delete } from "../util.js";
+import {
+  _fetch,
+  _create,
+  _update,
+  _delete,
+  update_bench_time,
+} from "../util.js";
 
 interface QoyodTax {
   id: number;
@@ -26,6 +32,10 @@ const qoyod_taxes: QoyodTaxes = {
 export const sync_taxes = async (commandEvent: CommandEvent) => {
   try {
     console.log("sync_taxes");
+
+    const new_bench_time = new Date().toISOString();
+    const bench_time_key = "bench_time_tax";
+
     const nameSpace = commandEvent.nameSpace.join("_");
     const result = {
       qoyod_total: 0,
@@ -105,6 +115,14 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
     }
 
     console.log(result);
+
+    await update_bench_time(
+      repzo,
+      commandEvent.app._id,
+      bench_time_key,
+      new_bench_time,
+    );
+
     return result;
   } catch (e: any) {
     //@ts-ignore

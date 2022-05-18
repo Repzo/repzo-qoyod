@@ -55,6 +55,7 @@ export interface App {
     disabled: boolean;
     available_app: AvailableApp;
     formData: any;
+    options_formData: any;
     company_namespace: string[];
 }
 export interface Command {
