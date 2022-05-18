@@ -10,6 +10,7 @@
 - [./src/commands/product] handle product.track_quantity as product.frozen @maramalshen
 - [./src/actions/create_invoice] create invoice in Qoyod @maramalshen
 - [./src/actions/create_payment] create payment in Qoyod @maramalshen
+- Handle Bench time in the Commands @maramalshen
 
 ### Changed
 
