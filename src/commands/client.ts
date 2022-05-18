@@ -1,6 +1,6 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config, CommandEvent, Result } from "../types";
 import {
   _fetch,
   _create,
@@ -26,18 +26,30 @@ interface QoyodClients {
 }
 
 export const addClients = async (commandEvent: CommandEvent) => {
+  const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
+    env: commandEvent.env,
+  });
+  const commandLog = new Repzo.CommandLog(
+    repzo,
+    commandEvent.app,
+    commandEvent.command,
+  );
   try {
     console.log("addClients");
     const new_bench_time = new Date().toISOString();
     const bench_time_key = "bench_time_client";
 
+    await commandLog.load(commandEvent.sync_id);
+    await commandLog.addDetail("Repzo Qoyod: Started Syncing Clients").commit();
+
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
       created: 0,
       updated: 0,
       failed: 0,
+      failed_msg: [],
     };
 
     const qoyod_clients: QoyodClients = await get_qoyod_clients(
@@ -50,6 +62,13 @@ export const addClients = async (commandEvent: CommandEvent) => {
       ),
     );
     result.qoyod_total = qoyod_clients?.customers?.length;
+    await commandLog
+      .addDetail(
+        `${qoyod_clients?.customers?.length} clients changed since ${
+          commandEvent.app.options_formData[bench_time_key] || "ever"
+        }`,
+      )
+      .commit();
 
     const db = new DataSet([], { autoIndex: false });
     db.createIndex({
@@ -67,14 +86,17 @@ export const addClients = async (commandEvent: CommandEvent) => {
       (client: QoyodClient) => `${nameSpace}_${client.id}`,
     ); // ??
 
-    const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
-      env: commandEvent.env,
-    });
     const repzo_clients = await repzo.client.find({
       "integration_meta.id": client_meta,
       // project:["_id", "name", "integration_meta", "disabled", "email", "phone", "tax_number"]
     });
     result.repzo_total = repzo_clients?.data?.length;
+    await commandLog
+      .addDetail(
+        `${repzo_clients?.data?.length} clients in Repzo was matched the integration.id`,
+      )
+      .commit();
+
     for (let i = 0; i < qoyod_clients.customers.length; i++) {
       const qoyod_client: QoyodClient = qoyod_clients.customers[i];
       const repzo_client = repzo_clients.data.find(
@@ -104,7 +126,8 @@ export const addClients = async (commandEvent: CommandEvent) => {
           const created_client = await repzo.client.create(body);
           result.created++;
         } catch (e: any) {
-          console.log("Create Client Failed >> ", e.response, body);
+          console.log("Create Client Failed >> ", e?.response, body);
+          result.failed_msg.push("Create Client Failed >> ", e?.response, body);
           result.failed++;
         }
       } else {
@@ -119,8 +142,9 @@ export const addClients = async (commandEvent: CommandEvent) => {
             body,
           );
           result.updated++;
-        } catch (e) {
+        } catch (e: any) {
           console.log("Update Client Failed >> ", e, body);
+          result.failed_msg.push("Update Client Failed >> ", e?.response, body);
           result.failed++;
         }
       }
@@ -134,27 +158,48 @@ export const addClients = async (commandEvent: CommandEvent) => {
       bench_time_key,
       new_bench_time,
     );
-
+    await commandLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e.response.data);
+    console.error(e?.response?.data);
+    await commandLog.setStatus("fail", e?.response).commit();
     throw e?.response;
   }
 };
 
 export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
+  const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
+    env: commandEvent.env,
+  });
+  const commandLog = new Repzo.CommandLog(
+    repzo,
+    commandEvent.app,
+    commandEvent.command,
+  );
   try {
     console.log("updatedInactiveClients");
     const new_bench_time = new Date().toISOString();
     const bench_time_key = "bench_time_disabled_client";
 
+    await commandLog.load(commandEvent.sync_id);
+    await commandLog
+      .addDetail("Repzo Qoyod: Started Syncing Disabled Clients")
+      .commit();
+
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: {
+      qoyod_total: number;
+      repzo_total: number;
+      disabled: number;
+      failed: number;
+      failed_msg: any[];
+    } = {
       qoyod_total: 0,
       repzo_total: 0,
       disabled: 0,
       failed: 0,
+      failed_msg: [],
     };
 
     const qoyod_clients: QoyodClients = await get_qoyod_clients(
@@ -167,16 +212,28 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       ),
     );
     result.qoyod_total = qoyod_clients?.customers?.length;
+    await commandLog
+      .addDetail(
+        `${qoyod_clients?.customers?.length} clients changed since ${
+          commandEvent.app.options_formData[bench_time_key] || "ever"
+        }`,
+      )
+      .commit();
+
     const client_meta = qoyod_clients?.customers.map(
       (client: QoyodClient) => `${nameSpace}_${client.id}`,
     ); // ??
-    const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
-      env: commandEvent.env,
-    });
+
     const repzo_clients = await repzo.client.find({
       "integration_meta.id": client_meta,
     });
     result.repzo_total = repzo_clients?.data?.length;
+    await commandLog
+      .addDetail(
+        `${repzo_clients?.data?.length} clients in Repzo was matched the integration.id`,
+      )
+      .commit();
+
     for (let i = 0; i < qoyod_clients.customers.length; i++) {
       const qoyod_client: QoyodClient = qoyod_clients.customers[i];
       const repzo_client = repzo_clients.data.find(
@@ -189,8 +246,11 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
         try {
           const disabled_client = await repzo.client.remove(repzo_client._id);
           result.disabled++;
-        } catch (e) {
+        } catch (e: any) {
           console.log("Disable Client Failed >> ", e);
+          result.failed_msg.push("Disable Client Failed >> ", e?.response, {
+            client_id: repzo_client._id,
+          });
           result.failed++;
         }
       }
@@ -204,11 +264,12 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       bench_time_key,
       new_bench_time,
     );
-
+    await commandLog.setStatus("success").setBody(result).commit();
     return result;
-  } catch (e) {
+  } catch (e: any) {
     //@ts-ignore
     console.error(e);
+    await commandLog.setStatus("fail", e?.response).commit();
     throw e;
   }
 };

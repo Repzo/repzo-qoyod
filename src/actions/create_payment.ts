@@ -1,6 +1,6 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config, CommandEvent, Result } from "../types";
 import { _fetch, _create, _update, _delete } from "../util.js";
 import { Service } from "repzo/src/types";
 

@@ -1,6 +1,6 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config, CommandEvent, Result } from "../types";
 import { _fetch, _create, _update, _delete } from "../util.js";
 import { v4 as uuid } from "uuid";
 
@@ -44,12 +44,13 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
   try {
     console.log("adjust_inventory");
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
       created: 0,
       updated: 0,
       failed: 0,
+      failed_msg: [],
     };
 
     const qoyod_products: QoyodProducts = await get_qoyod_products(
@@ -170,7 +171,7 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e.response.data);
+    console.error(e?.response?.data);
     throw e?.response;
   }
 };

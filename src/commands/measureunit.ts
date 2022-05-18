@@ -1,6 +1,6 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config, CommandEvent, Result } from "../types";
 import {
   _fetch,
   _create,
@@ -21,19 +21,33 @@ export interface QoyodUnits {
 }
 
 export const sync_measureunits = async (commandEvent: CommandEvent) => {
+  const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
+    env: commandEvent.env,
+  });
+  const commandLog = new Repzo.CommandLog(
+    repzo,
+    commandEvent.app,
+    commandEvent.command,
+  );
   try {
     console.log("sync_measureunits");
 
     const new_bench_time = new Date().toISOString();
     const bench_time_key = "bench_time_measureunit";
 
+    await commandLog.load(commandEvent.sync_id);
+    await commandLog
+      .addDetail("Repzo Qoyod: Started Syncing Measure Unit")
+      .commit();
+
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
       created: 0,
       updated: 0,
       failed: 0,
+      failed_msg: [],
     };
 
     const qoyod_units: QoyodUnits = await get_qoyod_units(
@@ -42,6 +56,13 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
       updateAt_query("", commandEvent.app.options_formData, bench_time_key),
     );
     result.qoyod_total = qoyod_units?.product_unit_types?.length;
+    await commandLog
+      .addDetail(
+        `${qoyod_units?.product_unit_types?.length} taxes changed since ${
+          commandEvent.app.options_formData[bench_time_key] || "ever"
+        }`,
+      )
+      .commit();
 
     const db = new DataSet([], { autoIndex: false });
     db.createIndex({
@@ -54,10 +75,6 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
       (unit: QoyodUnit) => `${nameSpace}_${unit.id}_1.0`,
     ); // ??
 
-    const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
-      env: commandEvent.env,
-    });
-
     const repzo_base_unit = await repzo.measureunit.find({
       parent: "nil",
       factor: 1,
@@ -66,13 +83,24 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
       repzo_base_unit?.data.length == 1
         ? repzo_base_unit?.data[0]._id
         : undefined;
-    if (!repzo_base_unit_id) throw new Error(`Repzo Base Unit was not found`);
+    if (!repzo_base_unit_id) {
+      await commandLog
+        .setStatus("fail", `Repzo Base Unit was not found`)
+        .commit();
+      throw new Error(`Repzo Base Unit was not found`);
+    }
 
     const repzo_units = await repzo.measureunit.find({
       "integration_meta.id": unit_query,
       // project:["_id", "name", "integration_meta", "disabled", "email", "phone", "tax_number"]
     });
     result.repzo_total = repzo_units?.data?.length;
+    await commandLog
+      .addDetail(
+        `${repzo_units?.data?.length} taxes in Repzo was matched the integration.id`,
+      )
+      .commit();
+
     for (let i = 0; i < qoyod_units.product_unit_types.length; i++) {
       const qoyod_unit: QoyodUnit = qoyod_units.product_unit_types[i];
       const repzo_unit = repzo_units.data.find(
@@ -100,7 +128,12 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
           const created_unit = await repzo.measureunit.create(body);
           result.created++;
         } catch (e: any) {
-          console.log("Create Measure Unit Failed >> ", e.response, body);
+          console.log("Create Measure Unit Failed >> ", e?.response, body);
+          result.failed_msg.push(
+            "Create Measure Unit Failed >> ",
+            e?.response,
+            body,
+          );
           result.failed++;
         }
       } else {
@@ -117,8 +150,13 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
             body,
           );
           result.updated++;
-        } catch (e) {
-          console.log("Update Measure Unit Failed >> ", e, body);
+        } catch (e: any) {
+          console.log("Update Measure Unit Failed >> ", e?.response, body);
+          result.failed_msg.push(
+            "Update Measure Unit Failed >> ",
+            e?.response,
+            body,
+          );
           result.failed++;
         }
       }
@@ -132,11 +170,12 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
       bench_time_key,
       new_bench_time,
     );
-
+    await commandLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e.response.data);
+    console.error(e?.response?.data);
+    await commandLog.setStatus("fail", e?.response).commit();
     throw e?.response;
   }
 };

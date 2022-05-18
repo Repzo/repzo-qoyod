@@ -3,23 +3,11 @@ export declare const Actions: (event: import("./types.js").EVENT, options: impor
     failed: number;
 }>;
 export declare const ActionsList: import("./types.js").Action[];
-export declare const Commands: (CommandEvent: import("./types.js").CommandEvent) => Promise<{
-    qoyod_total: number;
-    repzo_total: number;
-    created: number;
-    updated: number;
-    failed: number;
-} | {
+export declare const Commands: (CommandEvent: import("./types.js").CommandEvent) => Promise<import("./types.js").Result | {
     qoyod_total: number;
     repzo_total: number;
     disabled: number;
     failed: number;
-} | {
-    qoyod_total_families: number;
-    repzo_total: number;
-    created_families: number;
-    created_secondary_units: number;
-    updated: number;
-    failed: number;
+    failed_msg: any[];
 }>;
 export declare const CommandsList: import("./types.js").Command[];

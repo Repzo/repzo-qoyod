@@ -1,6 +1,6 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config, CommandEvent, Result } from "../types";
 import {
   _fetch,
   _create,
@@ -52,12 +52,13 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
     const bench_time_key = "bench_time_inventory";
 
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
       created: 0,
       updated: 0,
       failed: 0,
+      failed_msg: [],
     };
 
     const qoyod_inventories: QoyodInventories = await get_qoyod_inventories(
@@ -114,7 +115,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
           const created_inventory = await repzo.warehouse.create(body);
           result.created++;
         } catch (e: any) {
-          console.log("Create inventory Failed >> ", e.response, body);
+          console.log("Create inventory Failed >> ", e?.response, body);
           result.failed++;
         }
       } else {
@@ -150,7 +151,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e.response.data);
+    console.error(e?.response?.data);
     throw e?.response;
   }
 };

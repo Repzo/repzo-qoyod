@@ -1,6 +1,6 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config, CommandEvent, Result } from "../types";
 import {
   _fetch,
   _create,
@@ -22,18 +22,34 @@ interface QoyodCategories {
 }
 
 export const sync_categories = async (commandEvent: CommandEvent) => {
+  const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
+    env: commandEvent.env,
+  });
+
+  const commandLog = new Repzo.CommandLog(
+    repzo,
+    commandEvent.app,
+    commandEvent.command,
+  );
   try {
     console.log("sync_categories");
+
     const new_bench_time = new Date().toISOString();
     const bench_time_key = "bench_time_category";
 
+    await commandLog.load(commandEvent.sync_id);
+    await commandLog
+      .addDetail("Repzo Qoyod: Started Syncing Product Categories")
+      .commit();
+
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
       created: 0,
       updated: 0,
       failed: 0,
+      failed_msg: [],
     };
 
     const qoyod_categories: QoyodCategories = await get_qoyod_categories(
@@ -41,7 +57,16 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       commandEvent.app.formData.serviceApiKey,
       updateAt_query("", commandEvent.app.options_formData, bench_time_key),
     );
+
     result.qoyod_total = qoyod_categories?.categories?.length;
+    await commandLog
+      .addDetail(
+        `${qoyod_categories?.categories?.length} categories changed since ${
+          commandEvent.app.options_formData[bench_time_key] || "ever"
+        }`,
+      )
+      .commit();
+
     const db = new DataSet([], { autoIndex: false });
     db.createIndex({
       id: true,
@@ -54,13 +79,17 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       (category: QoyodCategory) => `${nameSpace}_${category.id}`,
     );
 
-    const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
-      env: commandEvent.env,
-    });
     const repzo_categories = await repzo.category.find({
       "integration_meta.id": category_query,
     });
+
     result.repzo_total = repzo_categories?.data?.length;
+    await commandLog
+      .addDetail(
+        `${repzo_categories?.data?.length} categories in Repzo was matched the integration.id`,
+      )
+      .commit();
+
     for (let i = 0; i < qoyod_categories.categories.length; i++) {
       const qoyod_category: QoyodCategory = qoyod_categories.categories[i];
       const repzo_category = repzo_categories.data.find(
@@ -86,7 +115,12 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
           const created_category = await repzo.category.create(body);
           result.created++;
         } catch (e: any) {
-          console.log("Create Category Failed >> ", e.response, body);
+          result.failed_msg.push(
+            "Create Category Failed >> ",
+            e?.response,
+            body,
+          );
+          console.log("Create Category Failed >> ", e?.response, body);
           result.failed++;
         }
       } else {
@@ -103,8 +137,13 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
             body,
           );
           result.updated++;
-        } catch (e) {
-          console.log("Update Category Failed >> ", e, body);
+        } catch (e: any) {
+          result.failed_msg.push(
+            "Update Category Failed >> ",
+            e?.response,
+            body,
+          );
+          console.log("Update Category Failed >> ", e?.response, body);
           result.failed++;
         }
       }
@@ -118,11 +157,13 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       bench_time_key,
       new_bench_time,
     );
+    await commandLog.setStatus("success").setBody(result).commit();
 
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e.response.data);
+    console.error(e?.response?.data);
+    await commandLog.setStatus("fail", e?.response).commit();
     throw e?.response;
   }
 };

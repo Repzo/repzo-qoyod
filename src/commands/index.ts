@@ -1,4 +1,4 @@
-import { Config, Command, CommandEvent } from "./../types";
+import { Config, Command, CommandEvent, Result } from "./../types";
 import { addClients, updatedInactiveClients } from "./client.js";
 import { addProducts } from "./product.js";
 import { sync_categories } from "./category.js";

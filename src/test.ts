@@ -1,4 +1,4 @@
-import { CommandEvent } from "./types";
+import { CommandEvent, Result } from "./types";
 let commandEvent: CommandEvent = {
   app: {
     _id: "628397700cf4f813aa63b52c",
@@ -37,8 +37,11 @@ let commandEvent: CommandEvent = {
     },
     options_formData: { bench_time_client: "2022-05-18T10:25:21.853Z" },
     company_namespace: ["intgqoyod"],
+    createdAt: "2022-05-17T12:39:12.338Z",
+    updatedAt: "2022-05-18T10:26:15.172Z",
+    __v: 0,
   },
-  command: "add_client",
+  command: "sync_tax",
   end_of_day: "04:00",
   nameSpace: ["intgqoyod"], // demosv
   timezone: "Asia/Amman",
@@ -93,7 +96,7 @@ import { Commands } from "./index.js";
 Commands(commandEvent);
 
 /*
-import { CommandEvent } from "./types";
+import { CommandEvent, Result } from "./types";
 let commandEvent: CommandEvent = {
   app: {
     _id: "624a02d76f904d49c95fbee7",

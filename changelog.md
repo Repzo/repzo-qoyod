@@ -11,6 +11,7 @@
 - [./src/actions/create_invoice] create invoice in Qoyod @maramalshen
 - [./src/actions/create_payment] create payment in Qoyod @maramalshen
 - Handle Bench time in the Commands @maramalshen
+- Command Logs @maramalshen
 
 ### Changed
 

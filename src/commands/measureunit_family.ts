@@ -1,6 +1,6 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config, CommandEvent, Result } from "../types";
 import { _fetch, _create, _update, _delete } from "../util.js";
 import { get_qoyod_products } from "./product.js";
 import { get_qoyod_units, QoyodUnits } from "./measureunit.js";
@@ -48,27 +48,54 @@ type QoyodFamily = {
 };
 
 export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
+  const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
+    env: commandEvent.env,
+  });
+  const commandLog = new Repzo.CommandLog(
+    repzo,
+    commandEvent.app,
+    commandEvent.command,
+  );
   try {
     console.log("sync_measureunit_family");
+    await commandLog.load(commandEvent.sync_id);
+    await commandLog
+      .addDetail("Repzo Qoyod: Started Syncing Measure Unit Family")
+      .commit();
+
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: Result & {
+      qoyod_total_families: number;
+      created_families: number;
+      created_secondary_units: number;
+    } = {
+      qoyod_total: 0,
       qoyod_total_families: 0,
       repzo_total: 0,
       created_families: 0,
       created_secondary_units: 0,
+      created: 0,
       updated: 0,
       failed: 0,
+      failed_msg: [],
     };
     const qoyod_products: QoyodProducts = await get_qoyod_products(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
     );
     result.qoyod_total_families = qoyod_products?.products?.length;
+    await commandLog
+      .addDetail(`${qoyod_products?.products?.length} Products was found`)
+      .commit();
 
     const qoyod_units: QoyodUnits = await get_qoyod_units(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
     );
+
+    await commandLog
+      .addDetail(`${qoyod_units?.product_unit_types?.length} Units was found`)
+      .commit();
 
     const qoyod_measureunit_families: QoyodFamily = {};
     const unique_measureunits: { [key: string]: Unit } = {};
@@ -100,10 +127,6 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
       };
     });
 
-    const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
-      env: commandEvent.env,
-    });
-
     const repzo_base_unit = await repzo.measureunit.find({
       parent: "nil",
       factor: 1,
@@ -112,11 +135,19 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
       repzo_base_unit?.data.length == 1
         ? repzo_base_unit?.data[0]._id
         : undefined;
-    if (!repzo_base_unit_id) throw new Error(`Repzo Base Unit was not found`);
+    if (!repzo_base_unit_id) {
+      await commandLog
+        .setStatus("fail", `Repzo Base Unit was not found`)
+        .commit();
+      throw new Error(`Repzo Base Unit was not found`);
+    }
 
     const repzo_measureunits = await repzo.measureunit.find({
       per_page: 50000,
     });
+    await commandLog
+      .addDetail(`${repzo_measureunits?.data?.length} Measure Units was found`)
+      .commit();
 
     for (let key in unique_measureunits) {
       const qoyod_measureunit = unique_measureunits[key];
@@ -147,6 +178,11 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
     const repzo_measureunit_families = await repzo.measureunitFamily.find({
       per_page: 50000,
     });
+    await commandLog
+      .addDetail(
+        `${repzo_measureunit_families?.data?.length} Measure Unit Family was found`,
+      )
+      .commit();
 
     const db = new DataSet([], { autoIndex: false });
     db.createIndex({
@@ -197,6 +233,11 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
             e.response,
             qoyod_family,
           );
+          result.failed_msg.push(
+            "Create Measure Unit Family Failed >> ",
+            e?.response,
+            qoyod_family,
+          );
           result.failed++;
         }
       } else {
@@ -221,18 +262,25 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
             qoyod_family,
           );
           result.updated++;
-        } catch (e) {
+        } catch (e: any) {
           console.log("Update Measure Unit Failed >> ", e, qoyod_family);
+          result.failed_msg.push(
+            "Update Measure Unit Failed >> ",
+            e?.response,
+            qoyod_family,
+          );
           result.failed++;
         }
       }
     }
 
     console.log(result);
+    await commandLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e.response.data);
+    console.error(e?.response?.data);
+    await commandLog.setStatus("fail", e?.response).commit();
     throw e?.response;
   }
 };
@@ -284,7 +332,7 @@ const create_measureunit = async ({
       repzo_measureunits?.data?.push(created_unit);
       return created_unit._id;
     } catch (e: any) {
-      console.log("Create Measure Unit Failed >> ", e.response, body);
+      console.log("Create Measure Unit Failed >> ", e?.response, body);
       result.failed++;
     }
   } catch (e) {
