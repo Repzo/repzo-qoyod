@@ -1,8 +1,8 @@
 import Repzo from "repzo";
-import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent, Result } from "../types";
+import { EVENT, Config } from "../types";
 import { _fetch, _create, _update, _delete } from "../util.js";
 import { Service } from "repzo/src/types";
+import { v4 as uuid } from "uuid";
 
 interface QoyodPayment {
   invoice_payment: {
@@ -57,16 +57,20 @@ interface QoyodInvoices {
 }
 
 export const create_payment = async (event: EVENT, options: Config) => {
+  const repzo = new Repzo(options.data?.repzoApiKey, { env: options.env });
+  const action_sync_id: string = event?.headers?.action_sync_id || uuid();
+  const actionLog = new Repzo.ActionLogs(repzo, action_sync_id);
   try {
     console.log("create_payment");
+    const result = { created: 0, failed: 0, failed_msg: [] };
+
+    await actionLog.load(action_sync_id);
+    await actionLog.addDetail(`Repzo Qoyod: Started Create Payment`).commit();
+
     let body: Service.Payment.PaymentSchema | any = event.body;
     try {
       if (body) body = JSON.parse(body);
     } catch (e) {}
-
-    const result = { created: 0, failed: 0 };
-
-    const repzo = new Repzo(options.data?.repzoApiKey, { env: options.env });
     const repzo_payment = body;
 
     const qoyod_client = await repzo.client.get(repzo_payment.client_id);
@@ -121,10 +125,12 @@ export const create_payment = async (event: EVENT, options: Config) => {
     console.log(qoyod_payment);
 
     console.log(result);
+    await actionLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
     console.error(e);
+    await actionLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };
