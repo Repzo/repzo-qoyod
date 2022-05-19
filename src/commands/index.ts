@@ -7,6 +7,7 @@ import { sync_inventory } from "./inventory.js";
 import { adjust_inventory } from "./adjust_inventory.js";
 import { sync_taxes } from "./tax.js";
 import { sync_measureunit_family } from "./measureunit_family.js";
+import { join } from "./join.js";
 import { EVENT } from "./../types";
 export const commands = async (CommandEvent: CommandEvent) => {
   switch (CommandEvent.command) {
@@ -28,12 +29,19 @@ export const commands = async (CommandEvent: CommandEvent) => {
       return await sync_inventory(CommandEvent);
     case "adjust_inventory":
       return await adjust_inventory(CommandEvent);
+    case "join":
+      return await join(CommandEvent);
     default:
       throw `Route: ${CommandEvent.command} not found`;
   }
 };
 
 export const commandsList: Command[] = [
+  {
+    command: "join",
+    name: "Join",
+    description: "",
+  },
   {
     command: "add_client",
     name: "Sync Clients",

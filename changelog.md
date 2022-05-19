@@ -13,6 +13,7 @@
 - Handle Bench time in the Commands @maramalshen
 - Command Logs @maramalshen
 - Action Logs @maramalshen
+- [./src/commands/join] new Command: Join @maramalshen
 
 ### Changed
 

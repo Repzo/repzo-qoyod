@@ -4,7 +4,7 @@ export declare const Actions: (event: import("./types.js").EVENT, options: impor
     failed_msg: never[];
 }>;
 export declare const ActionsList: import("./types.js").Action[];
-export declare const Commands: (CommandEvent: import("./types.js").CommandEvent) => Promise<import("./types.js").Result | {
+export declare const Commands: (CommandEvent: import("./types.js").CommandEvent) => Promise<void | import("./types.js").Result | {
     qoyod_total: number;
     repzo_total: number;
     disabled: number;

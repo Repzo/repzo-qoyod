@@ -29,6 +29,9 @@ let commandEvent: CommandEvent = {
       invoices: {
         createInvoiceHook: true,
       },
+      payment: {
+        createPaymentHook: true,
+      },
       bench_time_client: "2022-05-18T09:16:00.000Z",
       serviceApiKey: "6a0226eb2f2fabdffbffd9b22",
       repzoApiKey: "VwNcaz2830dLsQYbs0krf_cnHdJ8gMXM_p6OPoM2Ruk",
@@ -42,7 +45,7 @@ let commandEvent: CommandEvent = {
     __v: 0,
   },
 
-  command: "add_client",
+  command: "join",
   // command: "update_disable_client",
   // command: "sync_inventory",
   // command: "sync_tax",
