@@ -163,7 +163,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
   } catch (e: any) {
     //@ts-ignore
     console.error(e?.response?.data);
-    await commandLog.setStatus("fail", e?.response).commit();
+    await commandLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };
@@ -181,13 +181,7 @@ const get_qoyod_categories = async (
     );
     return qoyod_categories;
   } catch (e: any) {
-    // code instead of msg
-    if (
-      e.response.data ==
-      "We could not retrieve your categories, we found nothing."
-    )
-      return { categories: [] };
-
+    if (e.response.status == 404) return { categories: [] };
     throw e;
   }
 };

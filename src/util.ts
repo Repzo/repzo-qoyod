@@ -20,10 +20,7 @@ export const _fetch = async (
   params?: Params,
 ) => {
   try {
-    const res = await axios.get(baseUrl + path, {
-      params,
-      headers,
-    });
+    const res = await axios.get(baseUrl + path, { params, headers });
     return res.data;
   } catch (e) {
     throw e;
@@ -114,6 +111,26 @@ export const updateAt_query = (
     }
     return QUERY;
   } catch (e) {
+    throw e;
+  }
+};
+
+export const get_data_from_qoyod = async (
+  _path: string,
+  default_res: any, // if no data was found
+  serviceEndPoint: string,
+  serviceApiKey: string,
+  query?: string,
+): Promise<any> => {
+  try {
+    const result: any = await _fetch(
+      serviceEndPoint,
+      `/${_path}${query ? query : ""}`,
+      { "API-KEY": serviceApiKey },
+    );
+    return result;
+  } catch (e: any) {
+    if (e.response.status == 404) return default_res;
     throw e;
   }
 };

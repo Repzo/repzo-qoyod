@@ -354,7 +354,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
   } catch (e: any) {
     //@ts-ignore
     console.error(e?.response?.data);
-    await commandLog.setStatus("fail", e?.response).commit();
+    await commandLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };
@@ -372,13 +372,7 @@ export const get_qoyod_products = async (
     );
     return qoyod_products;
   } catch (e: any) {
-    if (
-      // code instead of msg
-      e.response.data ==
-      "We could not retrieve your products, we found nothing."
-    )
-      return { products: [] };
-
+    if (e.response.status == 404) return { products: [] };
     throw e;
   }
 };

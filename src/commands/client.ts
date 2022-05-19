@@ -163,7 +163,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
   } catch (e: any) {
     //@ts-ignore
     console.error(e?.response?.data);
-    await commandLog.setStatus("fail", e?.response).commit();
+    await commandLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };
@@ -269,7 +269,7 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
   } catch (e: any) {
     //@ts-ignore
     console.error(e);
-    await commandLog.setStatus("fail", e?.response).commit();
+    await commandLog.setStatus("fail", e).commit();
     throw e;
   }
 };
@@ -287,13 +287,7 @@ const get_qoyod_clients = async (
     );
     return qoyod_clients;
   } catch (e: any) {
-    // code instead of msg
-    if (
-      e.response.data ==
-      "We could not retrieve your customers, we found nothing."
-    )
-      return { customers: [] };
-
+    if (e.response.status == 404) return { customers: [] };
     throw e;
   }
 };

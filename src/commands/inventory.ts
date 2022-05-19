@@ -169,13 +169,7 @@ const get_qoyod_inventories = async (
     );
     return qoyod_inventories;
   } catch (e: any) {
-    // code instead of msg
-    if (
-      e.response.data ==
-      "We could not retrieve your inventories, we found nothing."
-    )
-      return { inventories: [] };
-
+    if (e.response.status == 404) return { inventories: [] };
     throw e;
   }
 };

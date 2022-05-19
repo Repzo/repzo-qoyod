@@ -156,7 +156,7 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
   } catch (e: any) {
     //@ts-ignore
     console.error(e?.response?.data);
-    await commandLog.setStatus("fail", e?.response).commit();
+    await commandLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };

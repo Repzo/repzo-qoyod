@@ -142,7 +142,7 @@ const get_qoyod_invoices = async (
     );
     return qoyod_invoices;
   } catch (e: any) {
-    if (e.response.code == 404) return { invoices: [] };
+    if (e.response.status == 404) return { invoices: [] };
     throw e;
   }
 };

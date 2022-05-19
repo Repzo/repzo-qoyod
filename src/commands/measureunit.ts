@@ -92,7 +92,6 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
 
     const repzo_units = await repzo.measureunit.find({
       "integration_meta.id": unit_query,
-      // project:["_id", "name", "integration_meta", "disabled", "email", "phone", "tax_number"]
     });
     result.repzo_total = repzo_units?.data?.length;
     await commandLog
@@ -175,7 +174,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
   } catch (e: any) {
     //@ts-ignore
     console.error(e?.response?.data);
-    await commandLog.setStatus("fail", e?.response).commit();
+    await commandLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };
@@ -193,13 +192,7 @@ export const get_qoyod_units = async (
     );
     return qoyod_units;
   } catch (e: any) {
-    // code instead of msg
-    if (
-      e.response.data ==
-      "We could not retrieve your product_unit_types, we found nothing."
-    )
-      return { product_unit_types: [] };
-
+    if (e.response.status == 404) return { product_unit_types: [] };
     throw e;
   }
 };

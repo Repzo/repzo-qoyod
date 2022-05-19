@@ -15,4 +15,5 @@ export declare const _update: (baseUrl: string, path: string, body: Data, header
 export declare const _delete: (baseUrl: string, path: string, headers?: Headers | undefined, params?: Params | undefined) => Promise<any>;
 export declare const update_bench_time: (repzo: Repzo, app_id: string, key: string, value: string) => Promise<void>;
 export declare const updateAt_query: (QUERY: string, options_formData: any, bench_time_key: string) => string;
+export declare const get_data_from_qoyod: (_path: string, default_res: any, serviceEndPoint: string, serviceApiKey: string, query?: string | undefined) => Promise<any>;
 export {};

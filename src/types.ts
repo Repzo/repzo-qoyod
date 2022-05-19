@@ -58,18 +58,6 @@ export interface AvailableApp {
 //   company_namespace: string[];
 // }
 
-export interface Command {
-  command: string;
-  description: string;
-  name: string;
-}
-
-export interface Action {
-  name: string;
-  action: string;
-  description: string;
-}
-
 export interface CommandEvent {
   app: Service.App.Schema_with_populated_AvailableApp;
   command: string;
