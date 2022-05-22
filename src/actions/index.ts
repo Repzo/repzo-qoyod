@@ -11,7 +11,7 @@ export const actions = async (event: EVENT, options: Config) => {
     case "create_payment":
       return await create_payment(event, options);
     default:
-      throw "Route not found";
+      throw `Route: ${event.queryStringParameters?.action} not found`;
   }
 };
 

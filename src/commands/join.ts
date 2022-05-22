@@ -12,7 +12,7 @@ export const join = async (commandEvent: CommandEvent) => {
   const commandLog = new Repzo.CommandLog(
     repzo,
     commandEvent.app,
-    commandEvent.command
+    commandEvent.command,
   );
   try {
     console.log("join");
@@ -27,53 +27,55 @@ export const join = async (commandEvent: CommandEvent) => {
           app: "repzo-qoyod",
           action: "create_invoice",
           event: "invoice.create",
-          join: commandEvent?.app?.formData?.invoices?.createInvoiceHook,
+          join:
+            commandEvent?.app?.formData?.invoices?.createInvoiceHook || false,
         },
-        {
-          app: "repzo-qoyod",
-          action: "create_invoice",
-          event: "invoiceItems.create",
-          join: commandEvent?.app?.formData?.invoices?.createInvoiceHook,
-        },
-        {
-          app: "repzo-qoyod",
-          action: "create_invoice",
-          event: "returnItems.create",
-          join: commandEvent?.app?.formData?.invoices?.createInvoiceHook,
-        },
+        // {
+        //   app: "repzo-qoyod",
+        //   action: "create_invoice",
+        //   event: "invoiceItems.create",
+        //   join: false,
+        // },
+        // {
+        //   app: "repzo-qoyod",
+        //   action: "create_invoice",
+        //   event: "returnItems.create",
+        //   join: false,
+        // },
         // payment
         {
           app: "repzo-qoyod",
           action: "create_payment",
           event: "payment.create",
-          join: commandEvent?.app?.formData?.payment?.createPaymentHook,
+          join:
+            commandEvent?.app?.formData?.payment?.createPaymentHook || false,
         },
         // proforma
-        {
-          app: "repzo-qoyod",
-          action: "create_proforma",
-          event: "salesorder.approve",
-          join: false,
-        },
-        {
-          app: "repzo-qoyod",
-          action: "create_proforma",
-          event: "salesorder.create",
-          join: false,
-        },
+        // {
+        //   app: "repzo-qoyod",
+        //   action: "create_proforma",
+        //   event: "salesorder.approve",
+        //   join: false,
+        // },
+        // {
+        //   app: "repzo-qoyod",
+        //   action: "create_proforma",
+        //   event: "salesorder.create",
+        //   join: false,
+        // },
         // transfer
-        {
-          app: "repzo-qoyod",
-          action: "create_transfer",
-          event: "transfer.approve",
-          join: false,
-        },
-        {
-          app: "repzo-qoyod",
-          action: "create_transfer",
-          event: "transfer.create",
-          join: false,
-        },
+        // {
+        //   app: "repzo-qoyod",
+        //   action: "create_transfer",
+        //   event: "transfer.approve",
+        //   join: false,
+        // },
+        // {
+        //   app: "repzo-qoyod",
+        //   action: "create_transfer",
+        //   event: "transfer.create",
+        //   join: false,
+        // },
       ],
     };
 
