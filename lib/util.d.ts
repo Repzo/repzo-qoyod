@@ -1,4 +1,3 @@
-import Repzo from "repzo";
 interface Params {
     [key: string]: any;
 }

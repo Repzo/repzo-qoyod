@@ -1,4 +1,4 @@
-export declare const Actions: (event: import("./types.js").EVENT, options: import("./types.js").Config) => Promise<{
+export declare const Actions: (event: any, options: import("./types.js").Config) => Promise<{
     created: number;
     failed: number;
     failed_msg: never[];
