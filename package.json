@@ -1,7 +1,7 @@
 {
   "name": "repzo-qoyod",
   "description": "repzo qoyod integration",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "homepage": "",
   "keywords": [],
   "author": {
@@ -43,7 +43,7 @@
     "axios": "^0.26.1",
     "data-set-query": "0.0.10",
     "jsonwebtoken": "^8.5.1",
-    "repzo": "^1.0.9",
+    "repzo": "^1.0.10",
     "uuid": "^8.3.2"
   }
 }
