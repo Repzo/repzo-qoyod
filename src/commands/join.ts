@@ -27,7 +27,8 @@ export const join = async (commandEvent: CommandEvent) => {
           app: "repzo-qoyod",
           action: "create_invoice",
           event: "invoice.create",
-          join: commandEvent?.app?.formData?.invoices?.createInvoiceHook,
+          join:
+            commandEvent?.app?.formData?.invoices?.createInvoiceHook || false,
         },
         // {
         //   app: "repzo-qoyod",
@@ -46,7 +47,8 @@ export const join = async (commandEvent: CommandEvent) => {
           app: "repzo-qoyod",
           action: "create_payment",
           event: "payment.create",
-          join: commandEvent?.app?.formData?.payment?.createPaymentHook,
+          join:
+            commandEvent?.app?.formData?.payment?.createPaymentHook || false,
         },
         // proforma
         // {
