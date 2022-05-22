@@ -1,7 +1,13 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
-import { _fetch, _create, _update, _delete } from "../util.js";
+import { EVENT, Config, CommandEvent, Result } from "../types";
+import {
+  _fetch,
+  _create,
+  _update,
+  _delete,
+  update_bench_time,
+} from "../util.js";
 
 interface QoyodTax {
   id: number;
@@ -24,15 +30,32 @@ const qoyod_taxes: QoyodTaxes = {
 };
 
 export const sync_taxes = async (commandEvent: CommandEvent) => {
+  const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
+    env: commandEvent.env,
+  });
+
+  const commandLog = new Repzo.CommandLog(
+    repzo,
+    commandEvent.app,
+    commandEvent.command,
+  );
   try {
     console.log("sync_taxes");
+
+    const new_bench_time = new Date().toISOString();
+    const bench_time_key = "bench_time_tax";
+
+    await commandLog.load(commandEvent.sync_id);
+    await commandLog.addDetail("Repzo Qoyod: Started Syncing Taxes").commit();
+
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
       created: 0,
       updated: 0,
       failed: 0,
+      failed_msg: [],
     };
 
     result.qoyod_total = qoyod_taxes?.taxes?.length;
@@ -49,17 +72,27 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
       (tax: QoyodTax) => `${nameSpace}_${tax.id}_${tax.type}`,
     );
 
-    const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
-      env: commandEvent.env,
-    });
     const repzo_taxes = await repzo.tax.find({
       "integration_meta.id": tax_query,
     });
     result.repzo_total = repzo_taxes?.data?.length;
+    await commandLog
+      .addDetail(
+        `${qoyod_taxes?.taxes?.length} taxes changed since ${
+          commandEvent.app.options_formData[bench_time_key] || "ever"
+        }`,
+      )
+      .addDetail(
+        `${repzo_taxes?.data?.length} taxes in Repzo was matched the integration.id`,
+      )
+      .commit();
+
     for (let i = 0; i < qoyod_taxes.taxes.length; i++) {
       const qoyod_tax: QoyodTax = qoyod_taxes.taxes[i];
       const repzo_tax = repzo_taxes.data.find(
-        (r_tax) => r_tax.integration_meta?.id == `${nameSpace}_${qoyod_tax.id}`,
+        (r_tax) =>
+          r_tax.integration_meta?.id ==
+          `${nameSpace}_${qoyod_tax.id}_${qoyod_tax.type}`,
       );
 
       const default_tax_type: "inclusive" | "additive" | "N/A" = "additive";
@@ -83,7 +116,8 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
           const created_tax = await repzo.tax.create(body);
           result.created++;
         } catch (e: any) {
-          console.log("Create Tax Failed >> ", e.response, body);
+          result.failed_msg.push("Create Tax Failed >> ", e?.response, body);
+          console.log("Create Tax Failed >> ", e?.response, body);
           result.failed++;
         }
       } else {
@@ -97,18 +131,32 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
         try {
           const updated_tax = await repzo.tax.update(repzo_tax._id, body);
           result.updated++;
-        } catch (e) {
-          console.log("Update Tax Failed >> ", e, body);
+        } catch (e: any) {
+          console.log("Update Tax Failed >> ", e?.response?.data, body);
+          result.failed_msg.push(
+            "Update Tax Failed >> ",
+            e?.response?.data,
+            body,
+          );
           result.failed++;
         }
       }
     }
 
     console.log(result);
+
+    await update_bench_time(
+      repzo,
+      commandEvent.app._id,
+      bench_time_key,
+      new_bench_time,
+    );
+    await commandLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e.response.data);
+    console.error(e?.response?.data);
+    await commandLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };

@@ -1,7 +1,14 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
-import { _fetch, _create, _update, _delete } from "../util.js";
+import { EVENT, Config, CommandEvent, Result } from "../types";
+import {
+  _fetch,
+  _create,
+  _update,
+  _delete,
+  update_bench_time,
+  updateAt_query,
+} from "../util.js";
 // var config = ;
 
 interface QoyodInventory {
@@ -41,17 +48,23 @@ interface WarehouseBody {
 export const sync_inventory = async (commandEvent: CommandEvent) => {
   try {
     console.log("sync_inventory");
+    const new_bench_time = new Date().toISOString();
+    const bench_time_key = "bench_time_inventory";
+
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
       created: 0,
       updated: 0,
       failed: 0,
+      failed_msg: [],
     };
+
     const qoyod_inventories: QoyodInventories = await get_qoyod_inventories(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
+      updateAt_query("", commandEvent.app.options_formData, bench_time_key),
     );
     result.qoyod_total = qoyod_inventories?.inventories?.length;
 
@@ -102,7 +115,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
           const created_inventory = await repzo.warehouse.create(body);
           result.created++;
         } catch (e: any) {
-          console.log("Create inventory Failed >> ", e.response, body);
+          console.log("Create inventory Failed >> ", e?.response, body);
           result.failed++;
         }
       } else {
@@ -127,10 +140,18 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
     }
 
     console.log(result);
+
+    await update_bench_time(
+      repzo,
+      commandEvent.app._id,
+      bench_time_key,
+      new_bench_time,
+    );
+
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e.response.data);
+    console.error(e?.response?.data);
     throw e?.response;
   }
 };
@@ -148,13 +169,7 @@ const get_qoyod_inventories = async (
     );
     return qoyod_inventories;
   } catch (e: any) {
-    // code instead of msg
-    if (
-      e.response.data ==
-      "We could not retrieve your inventories, we found nothing."
-    )
-      return { inventories: [] };
-
+    if (e.response.status == 404) return { inventories: [] };
     throw e;
   }
 };

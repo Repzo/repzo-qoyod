@@ -1,8 +1,2 @@
-import { CommandEvent } from "../types";
-export declare const sync_categories: (commandEvent: CommandEvent) => Promise<{
-    qoyod_total: number;
-    repzo_total: number;
-    created: number;
-    updated: number;
-    failed: number;
-}>;
+import { CommandEvent, Result } from "../types";
+export declare const sync_categories: (commandEvent: CommandEvent) => Promise<Result>;

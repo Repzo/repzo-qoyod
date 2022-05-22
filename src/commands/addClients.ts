@@ -1,5 +1,5 @@
 import axios from "axios";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config, CommandEvent, Result } from "../types";
 
 // var config = ;
 export const addClients = async (commandEvent: CommandEvent) => {
@@ -8,8 +8,8 @@ export const addClients = async (commandEvent: CommandEvent) => {
       method: "GET",
       url: `${commandEvent.app.available_app.app_settings.serviceEndPoint}/customers`,
       headers: {
-        "API-KEY": commandEvent.app.formData.serviceApiKey
-      }
+        "API-KEY": commandEvent.app.formData.serviceApiKey,
+      },
     });
 
     console.dir(res?.data, { depth: 3 });

@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { Service } from "repzo/src/types";
 export interface Config {
   data?: any;
   repzoEndPoint: string;
@@ -46,29 +47,19 @@ export interface AvailableApp {
   app_settings: { repo: string; serviceEndPoint: string; meta: {} };
   app_category: string;
 }
-export interface App {
-  _id: StringId;
-  name: string;
-  disabled: boolean;
-  available_app: AvailableApp;
-  formData: any;
-  company_namespace: string[];
-}
 
-export interface Command {
-  command: string;
-  description: string;
-  name: string;
-}
-
-export interface Action {
-  name: string;
-  action: string;
-  description: string;
-}
+// export interface App {
+//   _id: StringId;
+//   name: string;
+//   disabled: boolean;
+//   available_app: AvailableApp;
+//   formData: any;
+//   options_formData: any;
+//   company_namespace: string[];
+// }
 
 export interface CommandEvent {
-  app: App;
+  app: Service.App.Schema_with_populated_AvailableApp;
   command: string;
   nameSpace: NameSpaces;
   meta?: any;
@@ -77,4 +68,13 @@ export interface CommandEvent {
   timezone: string;
   data?: any;
   env: "staging" | "production" | "local";
+}
+
+export interface Result {
+  qoyod_total: number;
+  repzo_total: number;
+  created: number;
+  updated: number;
+  failed: number;
+  failed_msg: any[];
 }

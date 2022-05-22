@@ -1,6 +1,6 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config, CommandEvent, Result } from "../types";
 import { _fetch, _create, _update, _delete } from "../util.js";
 import { v4 as uuid } from "uuid";
 
@@ -41,38 +41,59 @@ interface QoyodProducts {
 }
 
 export const adjust_inventory = async (commandEvent: CommandEvent) => {
+  const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
+    env: commandEvent.env,
+  });
+  const commandLog = new Repzo.CommandLog(
+    repzo,
+    commandEvent.app,
+    commandEvent.command,
+  );
   try {
+    await commandLog.load(commandEvent.sync_id);
+    await commandLog
+      .addDetail("Repzo Qoyod: Started Syncing Product Categories")
+      .commit();
+
     console.log("adjust_inventory");
     const nameSpace = commandEvent.nameSpace.join("_");
-    const result = {
+    const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
       created: 0,
       updated: 0,
       failed: 0,
+      failed_msg: [],
     };
 
     const qoyod_products: QoyodProducts = await get_qoyod_products(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
     );
+    commandLog.addDetail(
+      `${qoyod_products.products?.length} Products in Qoyod`,
+    );
 
-    const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
-      env: commandEvent.env,
-    });
     const repzo_warehouses = await repzo.warehouse.find({
       per_page: 50000,
-      disabled: false,
     });
+    commandLog.addDetail(
+      `${repzo_warehouses?.data?.length} Warehouses in Repzo`,
+    );
 
     const repzo_variants = await repzo.variant.find({
       per_page: 50000,
-      disabled: false,
     });
+    commandLog.addDetail(`${repzo_variants?.data?.length} Variants in Repzo`);
 
     const repzo_measureunits = await repzo.measureunit.find({
       per_page: 50000,
     });
+    commandLog.addDetail(
+      `${repzo_measureunits?.data?.length} Measure units Warehouses in Repzo`,
+    );
+
+    await commandLog.commit();
 
     const qoyod_inventories: {
       [key: string]: {
@@ -97,6 +118,14 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       });
     });
 
+    await commandLog
+      .addDetail(
+        `${
+          Object.keys(qoyod_inventories).length
+        } Inventories with products in Qoyod`,
+      )
+      .commit();
+
     for (let key in qoyod_inventories) {
       const qoyod_warehouse_id = key;
       const qoyod_inventory = qoyod_inventories[key];
@@ -106,6 +135,9 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       );
       if (!repzo_warehouse) {
         console.log(
+          `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`,
+        );
+        result.failed_msg.push(
           `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`,
         );
         result.failed++;
@@ -125,6 +157,9 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
           console.log(
             `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_item.id} was not found`,
           );
+          result.failed_msg.push(
+            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_item.id} was not found`,
+          );
           result.failed++;
           return;
         }
@@ -134,6 +169,9 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
         );
         if (!repzo_measureunit) {
           console.log(
+            `Adjust Inventory Failed >> Measure Unit with integration_meta.qoyod_id: ${qoyod_item.unit_type} was not found`,
+          );
+          result.failed_msg.push(
             `Adjust Inventory Failed >> Measure Unit with integration_meta.qoyod_id: ${qoyod_item.unit_type} was not found`,
           );
           result.failed++;
@@ -167,10 +205,12 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
     }
 
     console.log(result);
+    await commandLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e.response.data);
+    console.error(e?.response?.data);
+    await commandLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };
@@ -188,13 +228,7 @@ const get_qoyod_products = async (
     );
     return qoyod_products;
   } catch (e: any) {
-    if (
-      // code instead of msg
-      e.response.data ==
-      "We could not retrieve your products, we found nothing."
-    )
-      return { products: [] };
-
+    if (e.response.status == 404) return { products: [] };
     throw e;
   }
 };

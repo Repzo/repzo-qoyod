@@ -1,8 +1,8 @@
 import Repzo from "repzo";
-import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent } from "../types";
+import { EVENT, Config } from "../types";
 import { _fetch, _create, _update, _delete } from "../util.js";
 import { Service } from "repzo/src/types";
+import { v4 as uuid } from "uuid";
 
 interface QoyodInvoiceItem {
   product_id: number; // product_id
@@ -34,19 +34,22 @@ interface QoyodInvoice {
 }
 
 export const create_invoice = async (event: EVENT, options: Config) => {
+  const repzo = new Repzo(options.data?.repzoApiKey, { env: options.env });
+  const action_sync_id: string = event?.headers?.action_sync_id || uuid();
+  const actionLog = new Repzo.ActionLogs(repzo, action_sync_id);
   try {
     console.log("create_invoice");
+    await actionLog.load(action_sync_id);
+    await actionLog.addDetail(`Repzo Qoyod: Started Create Invoice`).commit();
+
     let body: Service.FullInvoice.InvoiceSchema | any = event.body;
     try {
       if (body) body = JSON.parse(body);
     } catch (e) {}
 
-    const result = { created: 0, failed: 0 };
+    const result = { created: 0, failed: 0, failed_msg: [] };
 
-    const repzo = new Repzo(options.data?.repzoApiKey, { env: options.env });
-    const repzo_invoice = body; // await repzo.invoice.get(invoice_id, { populatedKeys: ["client"] });
-    if (!repzo_invoice)
-      throw new Error(`Invoice with _id: ${repzo_invoice} was not found`);
+    const repzo_invoice = body;
 
     const qoyod_client = await repzo.client.get(repzo_invoice.client_id);
     if (!qoyod_client.integration_meta?.qoyod_id)
@@ -117,7 +120,7 @@ export const create_invoice = async (event: EVENT, options: Config) => {
         description: repzo_invoice.comment,
         issue_date: repzo_invoice.issue_date,
         due_date: repzo_invoice.due_date,
-        status: "Approved",
+        status: options?.data?.invoices?.invoiceInitialStatus,
         inventory_id: repzo_invoice_warehouse.integration_meta?.qoyod_id,
         line_items: qoyod_invoice_items,
         draft_if_out_of_stock: true,
@@ -134,12 +137,13 @@ export const create_invoice = async (event: EVENT, options: Config) => {
     );
 
     console.log(qoyod_invoice);
-
     console.log(result);
+    await actionLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
     console.error(e);
+    await actionLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };

@@ -1,18 +1,9 @@
-import { Command, CommandEvent } from "./../types";
-export declare const commands: (CommandEvent: CommandEvent) => Promise<{
+import { Command, CommandEvent, Result } from "./../types";
+export declare const commands: (CommandEvent: CommandEvent) => Promise<void | Result | {
     qoyod_total: number;
     repzo_total: number;
     disabled: number;
     failed: number;
-} | {
-    created: number;
-    failed: number;
-} | {
-    qoyod_total_families: number;
-    repzo_total: number;
-    created_families: number;
-    created_secondary_units: number;
-    updated: number;
-    failed: number;
+    failed_msg: any[];
 }>;
 export declare const commandsList: Command[];
