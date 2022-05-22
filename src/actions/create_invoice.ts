@@ -120,7 +120,7 @@ export const create_invoice = async (event: EVENT, options: Config) => {
         description: repzo_invoice.comment,
         issue_date: repzo_invoice.issue_date,
         due_date: repzo_invoice.due_date,
-        status: "Approved",
+        status: options?.data?.invoices?.invoiceInitialStatus,
         inventory_id: repzo_invoice_warehouse.integration_meta?.qoyod_id,
         line_items: qoyod_invoice_items,
         draft_if_out_of_stock: true,

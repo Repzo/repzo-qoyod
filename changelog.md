@@ -14,6 +14,7 @@
 - Command Logs @maramalshen
 - Action Logs @maramalshen
 - [./src/commands/join] new Command: Join @maramalshen
+- [./src/actions/create_invoice] read key invoice.status from settings @maramalshen
 
 ### Changed
 
