@@ -64,7 +64,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
     const qoyod_inventories: QoyodInventories = await get_qoyod_inventories(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
-      updateAt_query("", commandEvent.app.options_formData, bench_time_key),
+      updateAt_query("", commandEvent.app.options_formData, bench_time_key)
     );
     result.qoyod_total = qoyod_inventories?.inventories?.length;
 
@@ -78,7 +78,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
     db.load(qoyod_inventories?.inventories);
 
     const inventory_query = qoyod_inventories?.inventories.map(
-      (inventory: QoyodInventory) => `${nameSpace}_${inventory.id}`,
+      (inventory: QoyodInventory) => `${nameSpace}_${inventory.id}`
     ); // ??
 
     const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
@@ -93,7 +93,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
       const repzo_inventory = repzo_inventories.data.find(
         (r_inventory) =>
           r_inventory.integration_meta?.id ==
-          `${nameSpace}_${qoyod_inventory.id}`,
+          `${nameSpace}_${qoyod_inventory.id}`
       );
 
       const body: WarehouseBody = {
@@ -129,7 +129,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
         try {
           const updated_inventory = await repzo.warehouse.update(
             repzo_inventory._id,
-            body,
+            body
           );
           result.updated++;
         } catch (e) {
@@ -145,7 +145,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
       repzo,
       commandEvent.app._id,
       bench_time_key,
-      new_bench_time,
+      new_bench_time
     );
 
     return result;
@@ -159,13 +159,13 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
 const get_qoyod_inventories = async (
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string,
+  query?: string
 ): Promise<QoyodInventories> => {
   try {
     const qoyod_inventories: QoyodInventories = await _fetch(
       serviceEndPoint,
       `/inventories${query ? query : ""}`,
-      { "API-KEY": serviceApiKey },
+      { "API-KEY": serviceApiKey }
     );
     return qoyod_inventories;
   } catch (e: any) {

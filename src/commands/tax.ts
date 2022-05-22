@@ -37,7 +37,7 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
   const commandLog = new Repzo.CommandLog(
     repzo,
     commandEvent.app,
-    commandEvent.command,
+    commandEvent.command
   );
   try {
     console.log("sync_taxes");
@@ -69,7 +69,7 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
     db.load(qoyod_taxes?.taxes);
 
     const tax_query = qoyod_taxes?.taxes.map(
-      (tax: QoyodTax) => `${nameSpace}_${tax.id}_${tax.type}`,
+      (tax: QoyodTax) => `${nameSpace}_${tax.id}_${tax.type}`
     );
 
     const repzo_taxes = await repzo.tax.find({
@@ -80,10 +80,10 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
       .addDetail(
         `${qoyod_taxes?.taxes?.length} taxes changed since ${
           commandEvent.app.options_formData[bench_time_key] || "ever"
-        }`,
+        }`
       )
       .addDetail(
-        `${repzo_taxes?.data?.length} taxes in Repzo was matched the integration.id`,
+        `${repzo_taxes?.data?.length} taxes in Repzo was matched the integration.id`
       )
       .commit();
 
@@ -92,7 +92,7 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
       const repzo_tax = repzo_taxes.data.find(
         (r_tax) =>
           r_tax.integration_meta?.id ==
-          `${nameSpace}_${qoyod_tax.id}_${qoyod_tax.type}`,
+          `${nameSpace}_${qoyod_tax.id}_${qoyod_tax.type}`
       );
 
       const default_tax_type: "inclusive" | "additive" | "N/A" = "additive";
@@ -136,7 +136,7 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
           result.failed_msg.push(
             "Update Tax Failed >> ",
             e?.response?.data,
-            body,
+            body
           );
           result.failed++;
         }
@@ -149,7 +149,7 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
       repzo,
       commandEvent.app._id,
       bench_time_key,
-      new_bench_time,
+      new_bench_time
     );
     await commandLog.setStatus("success").setBody(result).commit();
     return result;

@@ -17,7 +17,7 @@ export const addInvoice = async (event: EVENT, options: Config) => {
     console.log(options.data);
   } catch (e) {
     //@ts-ignore
-    throw e
+    throw e;
     console.error(e);
   }
 };

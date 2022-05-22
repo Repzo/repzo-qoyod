@@ -29,7 +29,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
   const commandLog = new Repzo.CommandLog(
     repzo,
     commandEvent.app,
-    commandEvent.command,
+    commandEvent.command
   );
   try {
     console.log("sync_categories");
@@ -55,7 +55,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
     const qoyod_categories: QoyodCategories = await get_qoyod_categories(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
-      updateAt_query("", commandEvent.app.options_formData, bench_time_key),
+      updateAt_query("", commandEvent.app.options_formData, bench_time_key)
     );
 
     result.qoyod_total = qoyod_categories?.categories?.length;
@@ -63,7 +63,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       .addDetail(
         `${qoyod_categories?.categories?.length} categories changed since ${
           commandEvent.app.options_formData[bench_time_key] || "ever"
-        }`,
+        }`
       )
       .commit();
 
@@ -76,7 +76,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
     db.load(qoyod_categories?.categories);
 
     const category_query = qoyod_categories?.categories.map(
-      (category: QoyodCategory) => `${nameSpace}_${category.id}`,
+      (category: QoyodCategory) => `${nameSpace}_${category.id}`
     );
 
     const repzo_categories = await repzo.category.find({
@@ -86,7 +86,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
     result.repzo_total = repzo_categories?.data?.length;
     await commandLog
       .addDetail(
-        `${repzo_categories?.data?.length} categories in Repzo was matched the integration.id`,
+        `${repzo_categories?.data?.length} categories in Repzo was matched the integration.id`
       )
       .commit();
 
@@ -94,8 +94,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       const qoyod_category: QoyodCategory = qoyod_categories.categories[i];
       const repzo_category = repzo_categories.data.find(
         (r_category) =>
-          r_category.integration_meta?.id ==
-          `${nameSpace}_${qoyod_category.id}`,
+          r_category.integration_meta?.id == `${nameSpace}_${qoyod_category.id}`
       );
 
       const body = {
@@ -118,7 +117,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
           result.failed_msg.push(
             "Create Category Failed >> ",
             e?.response,
-            body,
+            body
           );
           console.log("Create Category Failed >> ", e?.response, body);
           result.failed++;
@@ -134,14 +133,14 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
         try {
           const updated_category = await repzo.category.update(
             repzo_category._id,
-            body,
+            body
           );
           result.updated++;
         } catch (e: any) {
           result.failed_msg.push(
             "Update Category Failed >> ",
             e?.response,
-            body,
+            body
           );
           console.log("Update Category Failed >> ", e?.response, body);
           result.failed++;
@@ -155,7 +154,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       repzo,
       commandEvent.app._id,
       bench_time_key,
-      new_bench_time,
+      new_bench_time
     );
     await commandLog.setStatus("success").setBody(result).commit();
 
@@ -171,13 +170,13 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
 const get_qoyod_categories = async (
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string,
+  query?: string
 ): Promise<QoyodCategories> => {
   try {
     const qoyod_categories: QoyodCategories = await _fetch(
       serviceEndPoint,
       `/categories${query ? query : ""}`,
-      { "API-KEY": serviceApiKey },
+      { "API-KEY": serviceApiKey }
     );
     return qoyod_categories;
   } catch (e: any) {

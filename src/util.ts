@@ -17,7 +17,7 @@ export const _fetch = async (
   baseUrl: string,
   path: string,
   headers?: Headers,
-  params?: Params,
+  params?: Params
 ) => {
   try {
     const res = await axios.get(baseUrl + path, { params, headers });
@@ -32,7 +32,7 @@ export const _create = async (
   path: string,
   body: Data,
   headers?: Headers,
-  params?: Params,
+  params?: Params
 ) => {
   try {
     const res = await axios.post(baseUrl + path, body, {
@@ -50,7 +50,7 @@ export const _update = async (
   path: string,
   body: Data,
   headers?: Headers,
-  params?: Params,
+  params?: Params
 ) => {
   try {
     const res = await axios.put(baseUrl + path, body, {
@@ -67,7 +67,7 @@ export const _delete = async (
   baseUrl: string,
   path: string,
   headers?: Headers,
-  params?: Params,
+  params?: Params
 ) => {
   try {
     const res = await axios.delete(baseUrl + path, {
@@ -84,7 +84,7 @@ export const update_bench_time = async (
   repzo: Repzo,
   app_id: string,
   key: string,
-  value: string,
+  value: string
 ): Promise<void> => {
   try {
     const res = await repzo.integrationApp.update(app_id, {
@@ -100,7 +100,7 @@ export const update_bench_time = async (
 export const updateAt_query = (
   QUERY: string,
   options_formData: any,
-  bench_time_key: string,
+  bench_time_key: string
 ): string => {
   try {
     QUERY = QUERY || "";
@@ -120,13 +120,13 @@ export const get_data_from_qoyod = async (
   default_res: any, // if no data was found
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string,
+  query?: string
 ): Promise<any> => {
   try {
     const result: any = await _fetch(
       serviceEndPoint,
       `/${_path}${query ? query : ""}`,
-      { "API-KEY": serviceApiKey },
+      { "API-KEY": serviceApiKey }
     );
     return result;
   } catch (e: any) {

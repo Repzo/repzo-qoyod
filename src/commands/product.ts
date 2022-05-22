@@ -56,7 +56,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
   const commandLog = new Repzo.CommandLog(
     repzo,
     commandEvent.app,
-    commandEvent.command,
+    commandEvent.command
   );
   try {
     console.log("addProducts");
@@ -82,14 +82,14 @@ export const addProducts = async (commandEvent: CommandEvent) => {
     const qoyod_products: QoyodProducts = await get_qoyod_products(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
-      updateAt_query("", commandEvent.app.options_formData, bench_time_key),
+      updateAt_query("", commandEvent.app.options_formData, bench_time_key)
     );
     result.qoyod_total = qoyod_products?.products?.length;
     await commandLog
       .addDetail(
         `${qoyod_products?.products?.length} products changed since ${
           commandEvent.app.options_formData[bench_time_key] || "ever"
-        }`,
+        }`
       )
       .commit();
 
@@ -118,7 +118,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
     });
     db.load(qoyod_products?.products);
     const product_query = qoyod_products?.products.map(
-      (product: QoyodProduct) => `${nameSpace}_${product.id}`,
+      (product: QoyodProduct) => `${nameSpace}_${product.id}`
     ); // ??
 
     const repzo_products = await repzo.product.find({
@@ -128,7 +128,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
     result.repzo_total = repzo_products?.data?.length;
     await commandLog
       .addDetail(
-        `${repzo_products?.data?.length} products in Repzo was matched the integration.id`,
+        `${repzo_products?.data?.length} products in Repzo was matched the integration.id`
       )
       .commit();
 
@@ -149,7 +149,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
     });
     await commandLog
       .addDetail(
-        `${repzo_measureunit_family?.data?.length} measure unit families`,
+        `${repzo_measureunit_family?.data?.length} measure unit families`
       )
       .commit();
 
@@ -157,7 +157,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       const qoyod_product: QoyodProduct = qoyod_products.products[i];
       const repzo_product = repzo_products.data.find(
         (r_product) =>
-          r_product.integration_meta?.id == `${nameSpace}_${qoyod_product.id}`,
+          r_product.integration_meta?.id == `${nameSpace}_${qoyod_product.id}`
       );
 
       const price: number = qoyod_product.selling_price
@@ -169,14 +169,14 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       const category = repzo_categories.data.find(
         (cate) =>
           cate.integration_meta?.id ==
-          `${nameSpace}_${qoyod_product.category_id}`,
+          `${nameSpace}_${qoyod_product.category_id}`
       );
       if (!category) {
         console.log(
-          `Update product Failed >> Category with integration_meta.id: ${nameSpace}_${qoyod_product.category_id} was not found`,
+          `Update product Failed >> Category with integration_meta.id: ${nameSpace}_${qoyod_product.category_id} was not found`
         );
         result.failed_msg.push(
-          `Update product Failed >> Category with integration_meta.id: ${nameSpace}_${qoyod_product.category_id} was not found`,
+          `Update product Failed >> Category with integration_meta.id: ${nameSpace}_${qoyod_product.category_id} was not found`
         );
         result.failed++;
         continue;
@@ -185,14 +185,14 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       const measureunit = repzo_measureunits.data.find(
         (unit) =>
           unit.integration_meta?.id ==
-          `${nameSpace}_${qoyod_product.unit_type}_1.0`,
+          `${nameSpace}_${qoyod_product.unit_type}_1.0`
       );
       if (!measureunit) {
         console.log(
-          `Update product Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_product.unit_type} was not found`,
+          `Update product Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_product.unit_type} was not found`
         );
         result.failed_msg.push(
-          `Update product Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_product.unit_type} was not found`,
+          `Update product Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_product.unit_type} was not found`
         );
         result.failed++;
         continue;
@@ -200,14 +200,14 @@ export const addProducts = async (commandEvent: CommandEvent) => {
 
       const measureunit_family = repzo_measureunit_family.data.find(
         (unit) =>
-          unit.integration_meta?.id == `${nameSpace}_${qoyod_product.sku}`,
+          unit.integration_meta?.id == `${nameSpace}_${qoyod_product.sku}`
       );
       if (!measureunit_family) {
         console.log(
-          `Update product Failed >> MeasureUnit Family with integration_meta.id: ${nameSpace}_${qoyod_product.sku} was not found`,
+          `Update product Failed >> MeasureUnit Family with integration_meta.id: ${nameSpace}_${qoyod_product.sku} was not found`
         );
         result.failed_msg.push(
-          `Update product Failed >> MeasureUnit Family with integration_meta.id: ${nameSpace}_${qoyod_product.sku} was not found`,
+          `Update product Failed >> MeasureUnit Family with integration_meta.id: ${nameSpace}_${qoyod_product.sku} was not found`
         );
         result.failed++;
         continue;
@@ -218,7 +218,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           cate.integration_meta?.id ==
           `${nameSpace}_${qoyod_product.tax_id}_${
             qoyod_product.is_inclusive ? "inclusive" : "additive"
-          }`,
+          }`
       );
       if (!tax) {
         console.log(
@@ -226,14 +226,14 @@ export const addProducts = async (commandEvent: CommandEvent) => {
             qoyod_product.tax_id
           }_${
             qoyod_product.is_inclusive ? "inclusive" : "additive"
-          } was not found`,
+          } was not found`
         );
         result.failed_msg.push(
           `Update product Failed >> Tax with integration_meta.id: ${nameSpace}_${
             qoyod_product.tax_id
           }_${
             qoyod_product.is_inclusive ? "inclusive" : "additive"
-          } was not found`,
+          } was not found`
         );
         result.failed++;
         continue;
@@ -241,7 +241,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
 
       const repzo_variant = repzo_product?.variants?.find(
         (variant) =>
-          variant.integration_meta?.id == `${nameSpace}_${qoyod_product.id}`,
+          variant.integration_meta?.id == `${nameSpace}_${qoyod_product.id}`
       );
 
       const body = {
@@ -297,7 +297,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           result.failed_msg.push(
             "Create product Failed >> ",
             e?.response,
-            body,
+            body
           );
           result.failed++;
         }
@@ -326,7 +326,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
         try {
           const updated_product = await repzo.product.update(
             repzo_product._id,
-            body,
+            body
           );
           result.updated++;
         } catch (e: any) {
@@ -334,7 +334,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           result.failed_msg.push(
             "Update product Failed >> ",
             e?.response,
-            body,
+            body
           );
           result.failed++;
         }
@@ -347,7 +347,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       repzo,
       commandEvent.app._id,
       bench_time_key,
-      new_bench_time,
+      new_bench_time
     );
     await commandLog.setStatus("success").setBody(result).commit();
     return result;
@@ -362,13 +362,13 @@ export const addProducts = async (commandEvent: CommandEvent) => {
 export const get_qoyod_products = async (
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string,
+  query?: string
 ): Promise<QoyodProducts> => {
   try {
     const qoyod_products: QoyodProducts = await _fetch(
       serviceEndPoint,
       `/products${query ? query : ""}`,
-      { "API-KEY": serviceApiKey },
+      { "API-KEY": serviceApiKey }
     );
     return qoyod_products;
   } catch (e: any) {

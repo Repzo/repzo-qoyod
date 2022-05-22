@@ -76,7 +76,7 @@ export const create_payment = async (event: EVENT, options: Config) => {
     const qoyod_client = await repzo.client.get(repzo_payment.client_id);
     if (!qoyod_client.integration_meta?.qoyod_id)
       throw new Error(
-        `Create Payment Failed >> payment.client was missed the integration.qoyod_id`,
+        `Create Payment Failed >> payment.client was missed the integration.qoyod_id`
       );
 
     const invoice_reference =
@@ -84,13 +84,13 @@ export const create_payment = async (event: EVENT, options: Config) => {
 
     if (!invoice_reference)
       throw new Error(
-        `Create Payment Failed >> payment.reference: ${repzo_payment.serial_number.formatted} was not linked with specific invoice`,
+        `Create Payment Failed >> payment.reference: ${repzo_payment.serial_number.formatted} was not linked with specific invoice`
       );
 
     const qoyod_invoices: QoyodInvoices = await get_qoyod_invoices(
       options.serviceEndPoint,
       options.data.serviceApiKey,
-      `?q[reference_eq]=${invoice_reference}`,
+      `?q[reference_eq]=${invoice_reference}`
     );
 
     const qoyod_invoice = qoyod_invoices?.invoices.length
@@ -99,7 +99,7 @@ export const create_payment = async (event: EVENT, options: Config) => {
 
     if (!qoyod_invoice)
       throw new Error(
-        `Create Payment Failed >> invoice.reference: ${invoice_reference} was missed in Qoyod`,
+        `Create Payment Failed >> invoice.reference: ${invoice_reference} was missed in Qoyod`
       );
     console.log(options.data.paymentAccountId);
 
@@ -119,7 +119,7 @@ export const create_payment = async (event: EVENT, options: Config) => {
       options.serviceEndPoint,
       "/invoice_payments",
       qoyod_payment_body,
-      { "API-KEY": options.data.serviceApiKey },
+      { "API-KEY": options.data.serviceApiKey }
     );
 
     console.log(qoyod_payment);
@@ -138,13 +138,13 @@ export const create_payment = async (event: EVENT, options: Config) => {
 const get_qoyod_invoices = async (
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string,
+  query?: string
 ): Promise<QoyodInvoices> => {
   try {
     const qoyod_invoices: QoyodInvoices = await _fetch(
       serviceEndPoint,
       `/invoices${query ? query : ""}`,
-      { "API-KEY": serviceApiKey },
+      { "API-KEY": serviceApiKey }
     );
     return qoyod_invoices;
   } catch (e: any) {

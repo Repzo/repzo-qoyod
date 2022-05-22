@@ -54,7 +54,7 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
   const commandLog = new Repzo.CommandLog(
     repzo,
     commandEvent.app,
-    commandEvent.command,
+    commandEvent.command
   );
   try {
     console.log("sync_measureunit_family");
@@ -81,7 +81,7 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
     };
     const qoyod_products: QoyodProducts = await get_qoyod_products(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
-      commandEvent.app.formData.serviceApiKey,
+      commandEvent.app.formData.serviceApiKey
     );
     result.qoyod_total_families = qoyod_products?.products?.length;
     await commandLog
@@ -90,7 +90,7 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
 
     const qoyod_units: QoyodUnits = await get_qoyod_units(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
-      commandEvent.app.formData.serviceApiKey,
+      commandEvent.app.formData.serviceApiKey
     );
 
     await commandLog
@@ -154,7 +154,7 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
       const repzo_measureunit = repzo_measureunits?.data?.find(
         (repzo_unit) =>
           repzo_unit.integration_meta?.id ==
-          `${nameSpace}_${qoyod_measureunit.id}_${qoyod_measureunit.factor}`,
+          `${nameSpace}_${qoyod_measureunit.id}_${qoyod_measureunit.factor}`
       );
 
       if (!repzo_measureunit) {
@@ -180,7 +180,7 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
     });
     await commandLog
       .addDetail(
-        `${repzo_measureunit_families?.data?.length} Measure Unit Family was found`,
+        `${repzo_measureunit_families?.data?.length} Measure Unit Family was found`
       )
       .commit();
 
@@ -201,8 +201,7 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
         name: family.name,
         measureunits: family.measureunits
           .map(
-            (unit) =>
-              unique_measureunits[`${unit.id}_${unit.factor}`]?.repzo_id,
+            (unit) => unique_measureunits[`${unit.id}_${unit.factor}`]?.repzo_id
           )
           .filter((unit) => unit),
         disabled: false,
@@ -217,26 +216,26 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
       const qoyod_family = measureunit_families[i];
       const repzo_family = repzo_measureunit_families.data.find(
         (r_family) =>
-          r_family.integration_meta?.id == qoyod_family.integration_meta?.id,
+          r_family.integration_meta?.id == qoyod_family.integration_meta?.id
       );
 
       if (!repzo_family) {
         // Create
         try {
           const created_family = await repzo.measureunitFamily.create(
-            qoyod_family,
+            qoyod_family
           );
           result.created_families++;
         } catch (e: any) {
           console.log(
             "Create Measure Unit Family Failed >> ",
             e.response,
-            qoyod_family,
+            qoyod_family
           );
           result.failed_msg.push(
             "Create Measure Unit Family Failed >> ",
             e?.response,
-            qoyod_family,
+            qoyod_family
           );
           result.failed++;
         }
@@ -252,14 +251,14 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
             qoyod_family.measureunits.length &&
           !found_identical_docs[0].measureunits.filter(
             (r_u: string) =>
-              !qoyod_family.measureunits.find((q_u) => q_u == r_u),
+              !qoyod_family.measureunits.find((q_u) => q_u == r_u)
           ).length;
         if (found_identical_docs.length && has_all_measureunits) continue;
         // Update
         try {
           const updated_family = await repzo.measureunitFamily.update(
             repzo_family._id,
-            qoyod_family,
+            qoyod_family
           );
           result.updated++;
         } catch (e: any) {
@@ -267,7 +266,7 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
           result.failed_msg.push(
             "Update Measure Unit Failed >> ",
             e?.response,
-            qoyod_family,
+            qoyod_family
           );
           result.failed++;
         }
@@ -304,13 +303,13 @@ const create_measureunit = async ({
 }): Promise<string | void> => {
   try {
     const matched_base_unit = qoyod_units?.product_unit_types?.find(
-      (base_unit) => base_unit.id == qoyod_measureunit.id,
+      (base_unit) => base_unit.id == qoyod_measureunit.id
     );
 
     if (!matched_base_unit) {
       result.failed++;
       throw new Error(
-        `Create Secondary Measure unit Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_measureunit.id} was not found`,
+        `Create Secondary Measure unit Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_measureunit.id} was not found`
       );
     }
     const body = {

@@ -32,7 +32,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
   const commandLog = new Repzo.CommandLog(
     repzo,
     commandEvent.app,
-    commandEvent.command,
+    commandEvent.command
   );
   try {
     console.log("addClients");
@@ -58,15 +58,15 @@ export const addClients = async (commandEvent: CommandEvent) => {
       updateAt_query(
         "?q[status_eq]=Active",
         commandEvent.app.options_formData,
-        bench_time_key,
-      ),
+        bench_time_key
+      )
     );
     result.qoyod_total = qoyod_clients?.customers?.length;
     await commandLog
       .addDetail(
         `${qoyod_clients?.customers?.length} clients changed since ${
           commandEvent.app.options_formData[bench_time_key] || "ever"
-        }`,
+        }`
       )
       .commit();
 
@@ -83,7 +83,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
     db.load(qoyod_clients?.customers);
 
     const client_meta = qoyod_clients?.customers.map(
-      (client: QoyodClient) => `${nameSpace}_${client.id}`,
+      (client: QoyodClient) => `${nameSpace}_${client.id}`
     ); // ??
 
     const repzo_clients = await repzo.client.find({
@@ -93,7 +93,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
     result.repzo_total = repzo_clients?.data?.length;
     await commandLog
       .addDetail(
-        `${repzo_clients?.data?.length} clients in Repzo was matched the integration.id`,
+        `${repzo_clients?.data?.length} clients in Repzo was matched the integration.id`
       )
       .commit();
 
@@ -101,7 +101,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
       const qoyod_client: QoyodClient = qoyod_clients.customers[i];
       const repzo_client = repzo_clients.data.find(
         (r_client) =>
-          r_client.integration_meta?.id == `${nameSpace}_${qoyod_client.id}`,
+          r_client.integration_meta?.id == `${nameSpace}_${qoyod_client.id}`
       );
 
       const body = {
@@ -132,14 +132,14 @@ export const addClients = async (commandEvent: CommandEvent) => {
         }
       } else {
         const found_identical_docs = db.search(
-          from_repzo_to_qoyod(repzo_client),
+          from_repzo_to_qoyod(repzo_client)
         );
         if (found_identical_docs.length) continue;
         // Update
         try {
           const updated_client = await repzo.client.update(
             repzo_client._id,
-            body,
+            body
           );
           result.updated++;
         } catch (e: any) {
@@ -156,7 +156,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
       repzo,
       commandEvent.app._id,
       bench_time_key,
-      new_bench_time,
+      new_bench_time
     );
     await commandLog.setStatus("success").setBody(result).commit();
     return result;
@@ -175,7 +175,7 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
   const commandLog = new Repzo.CommandLog(
     repzo,
     commandEvent.app,
-    commandEvent.command,
+    commandEvent.command
   );
   try {
     console.log("updatedInactiveClients");
@@ -208,20 +208,20 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       updateAt_query(
         "?q[status_eq]=Inactive",
         commandEvent.app.options_formData,
-        bench_time_key,
-      ),
+        bench_time_key
+      )
     );
     result.qoyod_total = qoyod_clients?.customers?.length;
     await commandLog
       .addDetail(
         `${qoyod_clients?.customers?.length} clients changed since ${
           commandEvent.app.options_formData[bench_time_key] || "ever"
-        }`,
+        }`
       )
       .commit();
 
     const client_meta = qoyod_clients?.customers.map(
-      (client: QoyodClient) => `${nameSpace}_${client.id}`,
+      (client: QoyodClient) => `${nameSpace}_${client.id}`
     ); // ??
 
     const repzo_clients = await repzo.client.find({
@@ -230,7 +230,7 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
     result.repzo_total = repzo_clients?.data?.length;
     await commandLog
       .addDetail(
-        `${repzo_clients?.data?.length} clients in Repzo was matched the integration.id`,
+        `${repzo_clients?.data?.length} clients in Repzo was matched the integration.id`
       )
       .commit();
 
@@ -238,7 +238,7 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       const qoyod_client: QoyodClient = qoyod_clients.customers[i];
       const repzo_client = repzo_clients.data.find(
         (r_client) =>
-          r_client.integration_meta?.id == `${nameSpace}_${qoyod_client.id}`,
+          r_client.integration_meta?.id == `${nameSpace}_${qoyod_client.id}`
       );
 
       if (repzo_client) {
@@ -262,7 +262,7 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       repzo,
       commandEvent.app._id,
       bench_time_key,
-      new_bench_time,
+      new_bench_time
     );
     await commandLog.setStatus("success").setBody(result).commit();
     return result;
@@ -277,13 +277,13 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
 const get_qoyod_clients = async (
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string,
+  query?: string
 ): Promise<QoyodClients> => {
   try {
     const qoyod_clients: QoyodClients = await _fetch(
       serviceEndPoint,
       `/customers${query ? query : ""}`,
-      { "API-KEY": serviceApiKey },
+      { "API-KEY": serviceApiKey }
     );
     return qoyod_clients;
   } catch (e: any) {

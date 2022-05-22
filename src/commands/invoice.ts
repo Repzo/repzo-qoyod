@@ -58,15 +58,15 @@ export const sync_invoice = async (commandEvent: CommandEvent) => {
     // if (!qoyod_client.integration_meta?.qoyod_id)
     if (!(repzo_invoice.client_id as any).integration_meta?.qoyod_id)
       throw new Error(
-        `Sync Invoice Failed >> invoice.client was missed the integration.qoyod_id`,
+        `Sync Invoice Failed >> invoice.client was missed the integration.qoyod_id`
       );
 
     const repzo_invoice_warehouse = await repzo.warehouse.get(
-      repzo_invoice.origin_warehouse,
+      repzo_invoice.origin_warehouse
     );
     if (!repzo_invoice_warehouse.integration_meta?.qoyod_id)
       throw new Error(
-        `Sync Invoice Failed >> invoice.origin_warehouse was missed the integration.qoyod_id`,
+        `Sync Invoice Failed >> invoice.origin_warehouse was missed the integration.qoyod_id`
       );
 
     const repzo_invoice_variant_ids: any = {};
@@ -89,19 +89,19 @@ export const sync_invoice = async (commandEvent: CommandEvent) => {
     for (let i = 0; i < repzo_invoice.items.length; i++) {
       const repzo_item = repzo_invoice.items[i];
       const repzo_variant = repzo_variants.data.find(
-        (variant) => variant._id == repzo_item.variant.variant_id._id,
+        (variant) => variant._id == repzo_item.variant.variant_id._id
       );
       if (!repzo_variant?.integration_meta?.qoyod_id)
         throw new Error(
-          `Sync Invoice Failed >> invoice.item.variant ${repzo_item.variant.variant_id._id} was missed the integration.qoyod_id`,
+          `Sync Invoice Failed >> invoice.item.variant ${repzo_item.variant.variant_id._id} was missed the integration.qoyod_id`
         );
 
       const repzo_measureunit = repzo_measureunits.data.find(
-        (unit) => unit._id == repzo_item.measureunit._id,
+        (unit) => unit._id == repzo_item.measureunit._id
       );
       if (!repzo_measureunit?.integration_meta?.qoyod_id)
         throw new Error(
-          `Sync Invoice Failed >> invoice.item.measureunit ${repzo_item.measureunit._id} was missed the integration.qoyod_id`,
+          `Sync Invoice Failed >> invoice.item.measureunit ${repzo_item.measureunit._id} was missed the integration.qoyod_id`
         );
 
       qoyod_invoice_items.push({
@@ -136,7 +136,7 @@ export const sync_invoice = async (commandEvent: CommandEvent) => {
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       "/invoices",
       qoyod_invoice_body,
-      { "API-KEY": commandEvent.app.formData.serviceApiKey },
+      { "API-KEY": commandEvent.app.formData.serviceApiKey }
     );
 
     console.log(qoyod_invoice);

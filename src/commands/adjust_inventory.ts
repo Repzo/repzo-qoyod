@@ -47,7 +47,7 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
   const commandLog = new Repzo.CommandLog(
     repzo,
     commandEvent.app,
-    commandEvent.command,
+    commandEvent.command
   );
   try {
     await commandLog.load(commandEvent.sync_id);
@@ -68,17 +68,17 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
 
     const qoyod_products: QoyodProducts = await get_qoyod_products(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
-      commandEvent.app.formData.serviceApiKey,
+      commandEvent.app.formData.serviceApiKey
     );
     commandLog.addDetail(
-      `${qoyod_products.products?.length} Products in Qoyod`,
+      `${qoyod_products.products?.length} Products in Qoyod`
     );
 
     const repzo_warehouses = await repzo.warehouse.find({
       per_page: 50000,
     });
     commandLog.addDetail(
-      `${repzo_warehouses?.data?.length} Warehouses in Repzo`,
+      `${repzo_warehouses?.data?.length} Warehouses in Repzo`
     );
 
     const repzo_variants = await repzo.variant.find({
@@ -90,7 +90,7 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       per_page: 50000,
     });
     commandLog.addDetail(
-      `${repzo_measureunits?.data?.length} Measure units Warehouses in Repzo`,
+      `${repzo_measureunits?.data?.length} Measure units Warehouses in Repzo`
     );
 
     await commandLog.commit();
@@ -122,7 +122,7 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       .addDetail(
         `${
           Object.keys(qoyod_inventories).length
-        } Inventories with products in Qoyod`,
+        } Inventories with products in Qoyod`
       )
       .commit();
 
@@ -131,14 +131,14 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       const qoyod_inventory = qoyod_inventories[key];
       const repzo_warehouse = repzo_warehouses.data.find(
         (warehouse) =>
-          warehouse.integration_meta?.qoyod_id == qoyod_warehouse_id,
+          warehouse.integration_meta?.qoyod_id == qoyod_warehouse_id
       );
       if (!repzo_warehouse) {
         console.log(
-          `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`,
+          `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`
         );
         result.failed_msg.push(
-          `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`,
+          `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`
         );
         result.failed++;
         continue;
@@ -151,35 +151,35 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       const variants: { variant: string; qty: number }[] = [];
       qoyod_inventory.forEach((qoyod_item) => {
         const repzo_variant = repzo_variants.data.find(
-          (variant) => variant.integration_meta?.qoyod_id == qoyod_item.id,
+          (variant) => variant.integration_meta?.qoyod_id == qoyod_item.id
         );
         if (!repzo_variant) {
           console.log(
-            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_item.id} was not found`,
+            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_item.id} was not found`
           );
           result.failed_msg.push(
-            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_item.id} was not found`,
+            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_item.id} was not found`
           );
           result.failed++;
           return;
         }
 
         const repzo_measureunit = repzo_measureunits.data.find(
-          (unit) => unit.integration_meta?.qoyod_id == qoyod_item.unit_type,
+          (unit) => unit.integration_meta?.qoyod_id == qoyod_item.unit_type
         );
         if (!repzo_measureunit) {
           console.log(
-            `Adjust Inventory Failed >> Measure Unit with integration_meta.qoyod_id: ${qoyod_item.unit_type} was not found`,
+            `Adjust Inventory Failed >> Measure Unit with integration_meta.qoyod_id: ${qoyod_item.unit_type} was not found`
           );
           result.failed_msg.push(
-            `Adjust Inventory Failed >> Measure Unit with integration_meta.qoyod_id: ${qoyod_item.unit_type} was not found`,
+            `Adjust Inventory Failed >> Measure Unit with integration_meta.qoyod_id: ${qoyod_item.unit_type} was not found`
           );
           result.failed++;
           return;
         }
 
         const repzo_item = repzo_inventory.data.find(
-          (item) => item.variant_id.toString() == repzo_variant._id.toString(),
+          (item) => item.variant_id.toString() == repzo_variant._id.toString()
         );
 
         const qoyod_item_stock = Number(qoyod_item.stock);
@@ -218,13 +218,13 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
 const get_qoyod_products = async (
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string,
+  query?: string
 ): Promise<QoyodProducts> => {
   try {
     const qoyod_products: QoyodProducts = await _fetch(
       serviceEndPoint,
       `/products${query ? query : ""}`,
-      { "API-KEY": serviceApiKey },
+      { "API-KEY": serviceApiKey }
     );
     return qoyod_products;
   } catch (e: any) {

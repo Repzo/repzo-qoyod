@@ -27,7 +27,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
   const commandLog = new Repzo.CommandLog(
     repzo,
     commandEvent.app,
-    commandEvent.command,
+    commandEvent.command
   );
   try {
     console.log("sync_measureunits");
@@ -53,14 +53,14 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
     const qoyod_units: QoyodUnits = await get_qoyod_units(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey,
-      updateAt_query("", commandEvent.app.options_formData, bench_time_key),
+      updateAt_query("", commandEvent.app.options_formData, bench_time_key)
     );
     result.qoyod_total = qoyod_units?.product_unit_types?.length;
     await commandLog
       .addDetail(
         `${qoyod_units?.product_unit_types?.length} taxes changed since ${
           commandEvent.app.options_formData[bench_time_key] || "ever"
-        }`,
+        }`
       )
       .commit();
 
@@ -72,7 +72,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
     db.load(qoyod_units?.product_unit_types);
 
     const unit_query = qoyod_units?.product_unit_types.map(
-      (unit: QoyodUnit) => `${nameSpace}_${unit.id}_1.0`,
+      (unit: QoyodUnit) => `${nameSpace}_${unit.id}_1.0`
     ); // ??
 
     const repzo_base_unit = await repzo.measureunit.find({
@@ -96,7 +96,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
     result.repzo_total = repzo_units?.data?.length;
     await commandLog
       .addDetail(
-        `${repzo_units?.data?.length} taxes in Repzo was matched the integration.id`,
+        `${repzo_units?.data?.length} taxes in Repzo was matched the integration.id`
       )
       .commit();
 
@@ -104,7 +104,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
       const qoyod_unit: QoyodUnit = qoyod_units.product_unit_types[i];
       const repzo_unit = repzo_units.data.find(
         (r_unit) =>
-          r_unit.integration_meta?.id == `${nameSpace}_${qoyod_unit.id}_1.0`,
+          r_unit.integration_meta?.id == `${nameSpace}_${qoyod_unit.id}_1.0`
       );
 
       const body = {
@@ -131,7 +131,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
           result.failed_msg.push(
             "Create Measure Unit Failed >> ",
             e?.response,
-            body,
+            body
           );
           result.failed++;
         }
@@ -146,7 +146,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
         try {
           const updated_unit = await repzo.measureunit.update(
             repzo_unit._id,
-            body,
+            body
           );
           result.updated++;
         } catch (e: any) {
@@ -154,7 +154,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
           result.failed_msg.push(
             "Update Measure Unit Failed >> ",
             e?.response,
-            body,
+            body
           );
           result.failed++;
         }
@@ -167,7 +167,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
       repzo,
       commandEvent.app._id,
       bench_time_key,
-      new_bench_time,
+      new_bench_time
     );
     await commandLog.setStatus("success").setBody(result).commit();
     return result;
@@ -182,13 +182,13 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
 export const get_qoyod_units = async (
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string,
+  query?: string
 ): Promise<QoyodUnits> => {
   try {
     const qoyod_units: QoyodUnits = await _fetch(
       serviceEndPoint,
       `/product_unit_types${query ? query : ""}`,
-      { "API-KEY": serviceApiKey },
+      { "API-KEY": serviceApiKey }
     );
     return qoyod_units;
   } catch (e: any) {
