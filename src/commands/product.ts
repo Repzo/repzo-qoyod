@@ -246,7 +246,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
 
       const body = {
         _id: repzo_product?._id,
-        name: qoyod_product.name_en,
+        name: qoyod_product.name_en || qoyod_product.name_ar,
         local_name: qoyod_product.name_ar,
         sku: qoyod_product.sku,
         category: category._id,

@@ -105,7 +105,7 @@ export const updateAt_query = (
   try {
     QUERY = QUERY || "";
     if (options_formData && options_formData[bench_time_key]) {
-      QUERY += `${QUERY ? "&" : ""}q[updated_at_gteq]=${
+      QUERY += `${QUERY ? "&" : "?"}q[updated_at_gteq]=${
         options_formData[bench_time_key]
       }`;
     }
