@@ -48,7 +48,7 @@ export const join = async (commandEvent: CommandEvent) => {
           action: "create_payment",
           event: "payment.create",
           join:
-            commandEvent?.app?.formData?.payment?.createPaymentHook || false,
+            commandEvent?.app?.formData?.payments?.createPaymentHook || false,
         },
         // proforma
         // {
