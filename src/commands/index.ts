@@ -42,7 +42,7 @@ export const commands = async (CommandEvent: CommandEvent) => {
 export const commandsList: Command[] = [
   {
     command: "basic",
-    name: "Basic",
+    name: "Full Sync",
     description: "",
   },
   {
