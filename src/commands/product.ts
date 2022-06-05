@@ -370,6 +370,8 @@ export const get_qoyod_products = async (
       `/products${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_products.hasOwnProperty("products"))
+      qoyod_products.products = [];
     return qoyod_products;
   } catch (e: any) {
     if (e.response.status == 404) return { products: [] };

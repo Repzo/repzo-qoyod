@@ -167,6 +167,8 @@ const get_qoyod_inventories = async (
       `/inventories${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_inventories.hasOwnProperty("inventories"))
+      qoyod_inventories.inventories = [];
     return qoyod_inventories;
   } catch (e: any) {
     if (e.response.status == 404) return { inventories: [] };

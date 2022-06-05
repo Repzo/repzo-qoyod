@@ -178,6 +178,8 @@ const get_qoyod_categories = async (
       `/categories${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_categories.hasOwnProperty("categories"))
+      qoyod_categories.categories = [];
     return qoyod_categories;
   } catch (e: any) {
     if (e.response.status == 404) return { categories: [] };

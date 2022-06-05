@@ -146,6 +146,8 @@ const get_qoyod_invoices = async (
       `/invoices${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_invoices.hasOwnProperty("invoices"))
+      qoyod_invoices.invoices = [];
     return qoyod_invoices;
   } catch (e: any) {
     if (e.response.status == 404) return { invoices: [] };

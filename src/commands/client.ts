@@ -285,6 +285,8 @@ const get_qoyod_clients = async (
       `/customers${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_clients.hasOwnProperty("customers"))
+      qoyod_clients.customers = [];
     return qoyod_clients;
   } catch (e: any) {
     if (e.response.status == 404) return { customers: [] };
