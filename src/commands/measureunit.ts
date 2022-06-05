@@ -161,7 +161,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
       }
     }
 
-    console.log(result);
+    // console.log(result);
 
     await update_bench_time(
       repzo,

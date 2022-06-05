@@ -198,13 +198,13 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
         variants: variants,
       };
 
-      console.log(data);
+      // console.log(data);
       if (!data.variants.length) continue;
       const adjust_inventory_res = await repzo.adjustInventory.create(data);
       result.created++;
     }
 
-    console.log(result);
+    // console.log(result);
     await commandLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {

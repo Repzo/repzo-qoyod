@@ -148,7 +148,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       }
     }
 
-    console.log(result);
+    // console.log(result);
 
     await update_bench_time(
       repzo,
