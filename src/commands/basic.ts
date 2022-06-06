@@ -20,27 +20,24 @@ export const basic = async (commandEvent: CommandEvent) => {
     await commandLog.addDetail("Repzo Qoyod: Basic Sync").commit();
 
     const required_syncing_commands = [
+      "join",
       "add_client",
       "update_disable_client",
-      "add_product",
       "sync_category",
       "sync_tax",
       "sync_measureunit",
       "sync_measureunit_family",
+      "add_product",
       "sync_inventory",
-      "join",
     ];
 
-    for (let i = 0; i < commandsList.length; i++) {
-      if (
-        commandsList[i].command == "basic" ||
-        !required_syncing_commands.includes(commandsList[i].command)
-      )
-        continue;
+    for (let i = 0; i < required_syncing_commands.length; i++) {
+      const command = required_syncing_commands[i];
+      const commandDes = commandsList.find((c) => c.command == command);
       const event: CommandEvent = JSON.parse(JSON.stringify(commandEvent));
-      event.command = commandsList[i].command;
+      event.command = command;
       await commandLog
-        .addDetail(`Start Syncing: ${commandsList[i].name}`)
+        .addDetail(`Start Syncing: ${commandDes?.name || command}`)
         .commit();
       await commands(event);
     }
