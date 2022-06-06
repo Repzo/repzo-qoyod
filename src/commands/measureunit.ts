@@ -161,7 +161,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
       }
     }
 
-    console.log(result);
+    // console.log(result);
 
     await update_bench_time(
       repzo,
@@ -190,6 +190,8 @@ export const get_qoyod_units = async (
       `/product_unit_types${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_units.hasOwnProperty("product_unit_types"))
+      qoyod_units.product_unit_types = [];
     return qoyod_units;
   } catch (e: any) {
     if (e.response.status == 404) return { product_unit_types: [] };

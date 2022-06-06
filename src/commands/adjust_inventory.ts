@@ -198,13 +198,13 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
         variants: variants,
       };
 
-      console.log(data);
+      // console.log(data);
       if (!data.variants.length) continue;
       const adjust_inventory_res = await repzo.adjustInventory.create(data);
       result.created++;
     }
 
-    console.log(result);
+    // console.log(result);
     await commandLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {
@@ -226,6 +226,8 @@ const get_qoyod_products = async (
       `/products${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_products.hasOwnProperty("products"))
+      qoyod_products.products = [];
     return qoyod_products;
   } catch (e: any) {
     if (e.response.status == 404) return { products: [] };

@@ -101,7 +101,7 @@ export const create_payment = async (event: EVENT, options: Config) => {
       throw new Error(
         `Create Payment Failed >> invoice.reference: ${invoice_reference} was missed in Qoyod`
       );
-    console.log(options.data.paymentAccountId);
+    // console.log(options.data.paymentAccountId);
 
     const qoyod_payment_body: QoyodPayment = {
       invoice_payment: {
@@ -113,7 +113,7 @@ export const create_payment = async (event: EVENT, options: Config) => {
       },
     };
 
-    console.dir(qoyod_payment_body, { depth: null });
+    // console.dir(qoyod_payment_body, { depth: null });
 
     const qoyod_payment = await _create(
       options.serviceEndPoint,
@@ -122,9 +122,9 @@ export const create_payment = async (event: EVENT, options: Config) => {
       { "API-KEY": options.data.serviceApiKey }
     );
 
-    console.log(qoyod_payment);
+    // console.log(qoyod_payment);
 
-    console.log(result);
+    // console.log(result);
     await actionLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {
@@ -146,6 +146,8 @@ const get_qoyod_invoices = async (
       `/invoices${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_invoices.hasOwnProperty("invoices"))
+      qoyod_invoices.invoices = [];
     return qoyod_invoices;
   } catch (e: any) {
     if (e.response.status == 404) return { invoices: [] };

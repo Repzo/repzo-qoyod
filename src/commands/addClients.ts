@@ -12,8 +12,8 @@ export const addClients = async (commandEvent: CommandEvent) => {
       },
     });
 
-    console.dir(res?.data, { depth: 3 });
-    console.log(commandEvent);
+    // console.dir(res?.data, { depth: 3 });
+    // console.log(commandEvent);
     if (Math.random() > 0.75) throw "Custom error for testing";
     return res?.data;
   } catch (e) {

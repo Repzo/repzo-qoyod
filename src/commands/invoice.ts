@@ -130,7 +130,7 @@ export const sync_invoice = async (commandEvent: CommandEvent) => {
       },
     };
 
-    console.dir(qoyod_invoice_body, { depth: null });
+    // console.dir(qoyod_invoice_body, { depth: null });
 
     const qoyod_invoice = await _create(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
@@ -139,9 +139,9 @@ export const sync_invoice = async (commandEvent: CommandEvent) => {
       { "API-KEY": commandEvent.app.formData.serviceApiKey }
     );
 
-    console.log(qoyod_invoice);
+    // console.log(qoyod_invoice);
 
-    console.log(result);
+    // console.log(result);
     return result;
   } catch (e: any) {
     //@ts-ignore

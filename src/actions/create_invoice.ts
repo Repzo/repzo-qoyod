@@ -38,7 +38,7 @@ export const create_invoice = async (event: EVENT, options: Config) => {
   const action_sync_id: string = event?.headers?.action_sync_id || uuid();
   const actionLog = new Repzo.ActionLogs(repzo, action_sync_id);
   try {
-    console.log("create_invoice");
+    // console.log("create_invoice");
     await actionLog.load(action_sync_id);
     await actionLog.addDetail(`Repzo Qoyod: Started Create Invoice`).commit();
 
@@ -127,7 +127,7 @@ export const create_invoice = async (event: EVENT, options: Config) => {
       },
     };
 
-    console.dir(qoyod_invoice_body, { depth: null });
+    // console.dir(qoyod_invoice_body, { depth: null });
 
     const qoyod_invoice = await _create(
       options.serviceEndPoint,
@@ -136,8 +136,8 @@ export const create_invoice = async (event: EVENT, options: Config) => {
       { "API-KEY": options.data.serviceApiKey }
     );
 
-    console.log(qoyod_invoice);
-    console.log(result);
+    // console.log(qoyod_invoice);
+    // console.log(result);
     await actionLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {

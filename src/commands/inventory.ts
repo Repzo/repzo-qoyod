@@ -139,7 +139,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
       }
     }
 
-    console.log(result);
+    // console.log(result);
 
     await update_bench_time(
       repzo,
@@ -167,6 +167,8 @@ const get_qoyod_inventories = async (
       `/inventories${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_inventories.hasOwnProperty("inventories"))
+      qoyod_inventories.inventories = [];
     return qoyod_inventories;
   } catch (e: any) {
     if (e.response.status == 404) return { inventories: [] };
