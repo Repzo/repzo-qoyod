@@ -273,7 +273,7 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
       }
     }
 
-    console.log(result);
+    // console.log(result);
     await commandLog.setStatus("success").setBody(result).commit();
     return result;
   } catch (e: any) {

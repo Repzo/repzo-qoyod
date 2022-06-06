@@ -91,7 +91,7 @@ export const update_bench_time = async (
       // options_formData: { [key]: value },
       [`options_formData.${key}`]: value,
     });
-    console.log(res);
+    // console.log(res);
   } catch (e) {
     throw e;
   }

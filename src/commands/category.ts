@@ -148,7 +148,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       }
     }
 
-    console.log(result);
+    // console.log(result);
 
     await update_bench_time(
       repzo,
@@ -178,6 +178,8 @@ const get_qoyod_categories = async (
       `/categories${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_categories.hasOwnProperty("categories"))
+      qoyod_categories.categories = [];
     return qoyod_categories;
   } catch (e: any) {
     if (e.response.status == 404) return { categories: [] };

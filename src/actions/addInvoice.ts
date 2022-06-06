@@ -13,8 +13,8 @@ export const addInvoice = async (event: EVENT, options: Config) => {
       data: event.body,
     });
 
-    console.dir(res?.data, { depth: 3 });
-    console.log(options.data);
+    // console.dir(res?.data, { depth: 3 });
+    // console.log(options.data);
   } catch (e) {
     //@ts-ignore
     throw e;

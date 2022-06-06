@@ -150,7 +150,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
       }
     }
 
-    console.log(result);
+    // console.log(result);
 
     await update_bench_time(
       repzo,
@@ -256,7 +256,7 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       }
     }
 
-    console.log(result);
+    // console.log(result);
 
     await update_bench_time(
       repzo,
@@ -285,6 +285,8 @@ const get_qoyod_clients = async (
       `/customers${query ? query : ""}`,
       { "API-KEY": serviceApiKey }
     );
+    if (!qoyod_clients.hasOwnProperty("customers"))
+      qoyod_clients.customers = [];
     return qoyod_clients;
   } catch (e: any) {
     if (e.response.status == 404) return { customers: [] };
