@@ -74,6 +74,7 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
 
     const repzo_taxes = await repzo.tax.find({
       "integration_meta.id": tax_query,
+      per_page: 50000,
     });
     result.repzo_total = repzo_taxes?.data?.length;
     await commandLog

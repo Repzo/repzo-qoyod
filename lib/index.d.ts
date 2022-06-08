@@ -1,5 +1,5 @@
 export declare const Actions: (
-  event: import("./types.js").EVENT,
+  event: any,
   options: import("./types.js").Config
 ) => Promise<{
   created: number;

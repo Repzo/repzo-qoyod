@@ -15,10 +15,13 @@
 - Action Logs @maramalshen
 - [./src/commands/join] new Command: Join @maramalshen
 - [./src/actions/create_invoice] read key invoice.status from settings @maramalshen
+- New Actions: Transfer & Sync_Client @maramalshen
 
 ### Changed
 
 ### Fixed
+
+- fix bug, get data from repzo with query per_page = 50000 @maramalshen
 
 ### Removed
 

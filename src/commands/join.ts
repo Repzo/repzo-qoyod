@@ -70,12 +70,13 @@ export const join = async (commandEvent: CommandEvent) => {
         //   event: "transfer.approve",
         //   join: false,
         // },
-        // {
-        //   app: "repzo-qoyod",
-        //   action: "create_transfer",
-        //   event: "transfer.create",
-        //   join: false,
-        // },
+        {
+          app: "repzo-qoyod",
+          action: "create_transfer",
+          event: "transfer.create",
+          join:
+            commandEvent?.app?.formData?.transfer?.createTransferHook || false,
+        },
       ],
     };
 
