@@ -81,6 +81,7 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
 
     const repzo_categories = await repzo.category.find({
       "integration_meta.id": category_query,
+      per_page: 50000,
     });
 
     result.repzo_total = repzo_categories?.data?.length;

@@ -1,7 +1,6 @@
 import { Config, Action } from "../types";
-import { EVENT } from "../types";
 export declare const actions: (
-  event: EVENT,
+  event: any,
   options: Config
 ) => Promise<{
   created: number;

@@ -75,10 +75,12 @@ export const create_invoice = async (event: EVENT, options: Config) => {
 
     const repzo_variants = await repzo.variant.find({
       _id: Object.keys(repzo_invoice_variant_ids),
+      per_page: 50000,
     });
 
     const repzo_measureunits = await repzo.measureunit.find({
       _id: Object.keys(repzo_invoice_measureunit_ids),
+      per_page: 50000,
     });
 
     const qoyod_invoice_items: QoyodInvoiceItem[] = [];

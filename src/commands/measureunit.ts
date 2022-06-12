@@ -92,6 +92,7 @@ export const sync_measureunits = async (commandEvent: CommandEvent) => {
 
     const repzo_units = await repzo.measureunit.find({
       "integration_meta.id": unit_query,
+      per_page: 50000,
     });
     result.repzo_total = repzo_units?.data?.length;
     await commandLog

@@ -88,6 +88,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
 
     const repzo_clients = await repzo.client.find({
       "integration_meta.id": client_meta,
+      per_page: 50000,
       // project:["_id", "name", "integration_meta", "disabled", "email", "phone", "tax_number"]
     });
     result.repzo_total = repzo_clients?.data?.length;
@@ -226,6 +227,7 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
 
     const repzo_clients = await repzo.client.find({
       "integration_meta.id": client_meta,
+      per_page: 50000,
     });
     result.repzo_total = repzo_clients?.data?.length;
     await commandLog

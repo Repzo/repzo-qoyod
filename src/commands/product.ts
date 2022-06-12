@@ -124,6 +124,7 @@ export const addProducts = async (commandEvent: CommandEvent) => {
     const repzo_products = await repzo.product.find({
       "integration_meta.id": product_query,
       withVariants: true,
+      per_page: 50000,
     });
     result.repzo_total = repzo_products?.data?.length;
     await commandLog

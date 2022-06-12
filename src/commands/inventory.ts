@@ -86,6 +86,7 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
     });
     const repzo_inventories = await repzo.warehouse.find({
       "integration_meta.id": inventory_query,
+      per_page: 50000,
     });
     result.repzo_total = repzo_inventories?.data?.length;
     for (let i = 0; i < qoyod_inventories.inventories.length; i++) {
