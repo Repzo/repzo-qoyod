@@ -61,18 +61,20 @@ export const create_payment = async (event: EVENT, options: Config) => {
   const action_sync_id: string = event?.headers?.action_sync_id || uuid();
   const actionLog = new Repzo.ActionLogs(repzo, action_sync_id);
   try {
-    console.log("create_payment");
     const result = { created: 0, failed: 0, failed_msg: [] };
-
     await actionLog.load(action_sync_id);
     await actionLog.addDetail(`Repzo Qoyod: Started Create Payment`).commit();
-
     let body: Service.Payment.PaymentSchema | any = event.body;
     try {
       if (body) body = JSON.parse(body);
     } catch (e) {}
     const repzo_payment = body;
-
+    const rep_id = repzo_payment.creator?.rep;
+    let rep, qoyod_payment_account_id;
+    if (rep_id) {
+      rep = await repzo.rep.get(rep_id);
+      qoyod_payment_account_id = rep.integration_meta?.qoyod_payment_account_id;
+    }
     const qoyod_client = await repzo.client.get(repzo_payment.client_id);
     if (!qoyod_client.integration_meta?.qoyod_id)
       throw new Error(
@@ -107,7 +109,9 @@ export const create_payment = async (event: EVENT, options: Config) => {
       invoice_payment: {
         reference: repzo_payment.serial_number.formatted,
         invoice_id: qoyod_invoice.id.toString(),
-        account_id: options.data.paymentAccountId,
+        account_id: qoyod_payment_account_id
+          ? qoyod_payment_account_id
+          : options.data.paymentAccountId,
         date: repzo_payment.paytime,
         amount: String(repzo_payment.amount / 1000),
       },
