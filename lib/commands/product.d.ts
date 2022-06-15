@@ -33,7 +33,7 @@ interface QoyodProduct {
     unit_selling_price?: string;
   }[];
 }
-interface QoyodProducts {
+export interface QoyodProducts {
   products: QoyodProduct[];
 }
 export declare const addProducts: (

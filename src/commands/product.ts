@@ -45,7 +45,7 @@ interface QoyodProduct {
   }[];
 }
 
-interface QoyodProducts {
+export interface QoyodProducts {
   products: QoyodProduct[];
 }
 

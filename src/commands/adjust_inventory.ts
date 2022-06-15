@@ -1,44 +1,8 @@
 import Repzo from "repzo";
-import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent, Result } from "../types";
+import { CommandEvent, Result } from "../types";
 import { _fetch, _create, _update, _delete } from "../util.js";
 import { v4 as uuid } from "uuid";
-
-interface QoyodProduct {
-  id: number;
-  name_ar: string;
-  name_en: string;
-  description?: string;
-  category_id: number;
-  type: "Product"; // "Product"| "Service"| "Expense"| "RawMaterial"| "Recipe";
-  unit_type: number;
-  unit: string;
-  buying_price: string; // "850.0";
-  selling_price: string; // "1000.0";
-  sku: string;
-  barcode?: string;
-  is_sold: boolean;
-  is_bought: boolean;
-  inventories?: {
-    id: number;
-    name_en: string;
-    name_ar: string;
-    stock: string;
-  }[];
-  ingredients?: [];
-  unit_conversions?: {
-    to_unit: number;
-    from_unit: number;
-    rate: string;
-    barcode?: string;
-    unit_purchase_price?: string;
-    unit_selling_price?: string;
-  }[];
-}
-
-interface QoyodProducts {
-  products: QoyodProduct[];
-}
+import { QoyodProducts, get_qoyod_products } from "./product.js";
 
 export const adjust_inventory = async (commandEvent: CommandEvent) => {
   const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
@@ -55,8 +19,8 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       .addDetail("Repzo Qoyod: Started Syncing Product Categories")
       .commit();
 
-    console.log("adjust_inventory");
     const nameSpace = commandEvent.nameSpace.join("_");
+    console.log(nameSpace, " adjust_inventory");
     const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
@@ -83,6 +47,7 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
 
     const repzo_variants = await repzo.variant.find({
       per_page: 50000,
+      withProduct: true,
     });
     commandLog.addDetail(`${repzo_variants?.data?.length} Variants in Repzo`);
 
@@ -93,109 +58,146 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       `${repzo_measureunits?.data?.length} Measure units Warehouses in Repzo`
     );
 
+    const repzo_inventory = await repzo.inventory.find({
+      per_page: 50000,
+      export_behaviour: true,
+    });
+    commandLog.addDetail(
+      `${repzo_inventory?.data?.length} variants in all inventories on Repzo`
+    );
+
     await commandLog.commit();
 
-    const qoyod_inventories: {
-      [key: string]: {
-        id: number;
-        sku: string;
-        unit_type: number;
-        unit?: string;
-        stock: string | number;
-      }[];
+    const master_warehouse_product: {
+      [qoyodWarehouseId_qoyodProductId: string]: {
+        qoyod_warehouse_id: number;
+        repzo_warehouse_id: string;
+        qoyod_product_id: number;
+        repzo_variant_id: string;
+        qoyod_qty: number;
+        repzo_qty: number;
+      };
     } = {};
-    qoyod_products.products.forEach((qoyod_product) => {
+
+    qoyod_products?.products?.forEach((qoyod_product) => {
       qoyod_product.inventories?.forEach((qoyod_product_inventory) => {
-        qoyod_inventories[qoyod_product_inventory.id] =
-          qoyod_inventories[qoyod_product_inventory.id] || [];
-        qoyod_inventories[qoyod_product_inventory.id].push({
-          id: qoyod_product.id,
-          sku: qoyod_product.sku,
-          unit_type: qoyod_product.unit_type,
-          unit: qoyod_product.unit,
-          stock: qoyod_product_inventory.stock,
-        });
+        const qoyod_warehouse_id = qoyod_product_inventory.id;
+        const qoyod_product_id = qoyod_product.id;
+        const qoyod_qty = Number(qoyod_product_inventory.stock);
+
+        const repzo_warehouse = repzo_warehouses?.data?.find(
+          (warehouse) =>
+            warehouse?.integration_meta?.qoyod_id?.toString() ==
+            qoyod_warehouse_id?.toString()
+        );
+
+        if (!repzo_warehouse) {
+          console.log(
+            `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`
+          );
+          result.failed_msg.push(
+            `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`
+          );
+          result.failed++;
+          return;
+        }
+
+        const repzo_variant = repzo_variants?.data?.find(
+          (variant) =>
+            variant?.integration_meta?.qoyod_id?.toString() ==
+            qoyod_product_id?.toString()
+        );
+
+        if (!repzo_variant) {
+          console.log(
+            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_product_id} was not found`
+          );
+          result.failed_msg.push(
+            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_product_id} was not found`
+          );
+          result.failed++;
+          return;
+        }
+
+        master_warehouse_product[`${qoyod_warehouse_id}_${qoyod_product_id}`] =
+          {
+            qoyod_warehouse_id,
+            qoyod_product_id,
+            qoyod_qty,
+            repzo_warehouse_id: repzo_warehouse?._id,
+            repzo_variant_id: repzo_variant?._id,
+            repzo_qty: 0,
+          };
       });
     });
 
-    await commandLog
-      .addDetail(
-        `${
-          Object.keys(qoyod_inventories).length
-        } Inventories with products in Qoyod`
-      )
-      .commit();
+    repzo_inventory?.data?.forEach((repzo_product_inventory) => {
+      const repzo_warehouse_id = repzo_product_inventory.warehouse_id;
+      const repzo_variant_id = repzo_product_inventory.variant_id;
+      const repzo_qty = repzo_product_inventory.qty;
+      const qoyod_product_id = Number(repzo_product_inventory.variant_name);
 
-    for (let key in qoyod_inventories) {
-      const qoyod_warehouse_id = key;
-      const qoyod_inventory = qoyod_inventories[key];
-      const repzo_warehouse = repzo_warehouses.data.find(
-        (warehouse) =>
-          warehouse.integration_meta?.qoyod_id == qoyod_warehouse_id
+      const repzo_warehouse = repzo_warehouses?.data?.find(
+        (warehouse) => warehouse._id.toString() == repzo_warehouse_id.toString()
       );
       if (!repzo_warehouse) {
         console.log(
-          `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`
+          `Adjust Inventory Failed >> Warehouse with integration_meta.repzo_id: ${repzo_warehouse_id} was not found`
         );
         result.failed_msg.push(
-          `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`
+          `Adjust Inventory Failed >> Warehouse with integration_meta.repzo_id: ${repzo_warehouse_id} was not found`
         );
         result.failed++;
-        continue;
+        return;
       }
-      const repzo_inventory = await repzo.inventory.find({
-        warehouse_id: repzo_warehouse._id,
-        per_page: 50000,
-      });
 
-      const variants: { variant: string; qty: number }[] = [];
-      qoyod_inventory.forEach((qoyod_item) => {
-        const repzo_variant = repzo_variants.data.find(
-          (variant) => variant.integration_meta?.qoyod_id == qoyod_item.id
-        );
-        if (!repzo_variant) {
-          console.log(
-            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_item.id} was not found`
-          );
-          result.failed_msg.push(
-            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_item.id} was not found`
-          );
-          result.failed++;
-          return;
-        }
+      const qoyod_warehouse_id = repzo_warehouse.integration_meta?.qoyod_id;
 
-        const repzo_measureunit = repzo_measureunits.data.find(
-          (unit) => unit.integration_meta?.qoyod_id == qoyod_item.unit_type
-        );
-        if (!repzo_measureunit) {
-          console.log(
-            `Adjust Inventory Failed >> Measure Unit with integration_meta.qoyod_id: ${qoyod_item.unit_type} was not found`
-          );
-          result.failed_msg.push(
-            `Adjust Inventory Failed >> Measure Unit with integration_meta.qoyod_id: ${qoyod_item.unit_type} was not found`
-          );
-          result.failed++;
-          return;
-        }
+      const master_key = `${qoyod_warehouse_id}_${repzo_variant_id}`;
 
-        const repzo_item = repzo_inventory.data.find(
-          (item) => item.variant_id.toString() == repzo_variant._id.toString()
-        );
+      if (master_warehouse_product[master_key]) {
+        master_warehouse_product[master_key].repzo_qty = repzo_qty;
+        master_warehouse_product[master_key].repzo_warehouse_id =
+          repzo_warehouse_id;
+        master_warehouse_product[master_key].repzo_variant_id =
+          repzo_variant_id;
+      } else {
+        master_warehouse_product[master_key] = {
+          qoyod_warehouse_id,
+          qoyod_product_id,
+          qoyod_qty: 0,
+          repzo_warehouse_id,
+          repzo_variant_id,
+          repzo_qty,
+        };
+      }
+    });
 
-        const qoyod_item_stock = Number(qoyod_item.stock);
-        const qoyod_qty = repzo_measureunit.factor * qoyod_item_stock;
+    const adjust_repzo_inventory: {
+      [repzo_inventory_id: string]: { variant: string; qty: number }[];
+    } = {};
 
-        const diff_qty = repzo_item ? qoyod_qty - repzo_item.qty : qoyod_qty;
+    Object.values(master_warehouse_product).forEach((warehouse_product) => {
+      const diff_qty =
+        warehouse_product.qoyod_qty - warehouse_product.repzo_qty;
 
-        if (diff_qty)
-          variants.push({ variant: repzo_variant._id, qty: diff_qty });
-      });
+      if (diff_qty) {
+        if (!adjust_repzo_inventory[warehouse_product.repzo_warehouse_id])
+          adjust_repzo_inventory[warehouse_product.repzo_warehouse_id] = [];
 
+        adjust_repzo_inventory[warehouse_product.repzo_warehouse_id].push({
+          variant: warehouse_product.repzo_variant_id,
+          qty: diff_qty,
+        });
+      }
+    });
+
+    for (let key in adjust_repzo_inventory) {
       const data = {
         time: Date.now(),
         sync_id: uuid(),
-        to: repzo_warehouse._id,
-        variants: variants,
+        to: key,
+        variants: adjust_repzo_inventory[key],
       };
 
       // console.log(data);
@@ -212,25 +214,5 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
     console.error(e?.response?.data);
     await commandLog.setStatus("fail", e).commit();
     throw e?.response;
-  }
-};
-
-const get_qoyod_products = async (
-  serviceEndPoint: string,
-  serviceApiKey: string,
-  query?: string
-): Promise<QoyodProducts> => {
-  try {
-    const qoyod_products: QoyodProducts = await _fetch(
-      serviceEndPoint,
-      `/products${query ? query : ""}`,
-      { "API-KEY": serviceApiKey }
-    );
-    if (!qoyod_products.hasOwnProperty("products"))
-      qoyod_products.products = [];
-    return qoyod_products;
-  } catch (e: any) {
-    if (e.response.status == 404) return { products: [] };
-    throw e;
   }
 };
