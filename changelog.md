@@ -19,6 +19,8 @@
 
 ### Changed
 
+- [adjust_inventory.ts] handle 0 stock
+
 ### Fixed
 
 - fix bug, get data from repzo with query per_page = 50000 @maramalshen
