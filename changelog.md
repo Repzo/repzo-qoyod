@@ -22,6 +22,7 @@
 ### Fixed
 
 - fix bug, get data from repzo with query per_page = 50000 @maramalshen
+- [adjust_inventory.ts] fix bug: get measureunit from the variant.product.sv_measureUnit @maramalshen
 
 ### Removed
 

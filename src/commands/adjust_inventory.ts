@@ -1,4 +1,5 @@
 import Repzo from "repzo";
+import { Service } from "repzo/lib/types";
 import DataSet from "data-set-query";
 import { EVENT, Config, CommandEvent, Result } from "../types";
 import { _fetch, _create, _update, _delete } from "../util.js";
@@ -83,6 +84,7 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
 
     const repzo_variants = await repzo.variant.find({
       per_page: 50000,
+      withProduct: true,
     });
     commandLog.addDetail(`${repzo_variants?.data?.length} Variants in Repzo`);
 
@@ -165,7 +167,12 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
         }
 
         const repzo_measureunit = repzo_measureunits.data.find(
-          (unit) => unit.integration_meta?.qoyod_id == qoyod_item.unit_type
+          (unit) =>
+            unit.integration_meta?.qoyod_id == qoyod_item.unit_type &&
+            unit._id.toString() ==
+              (
+                repzo_variant.product as Service.Product.ProductSchema
+              )?.sv_measureUnit?.toString()
         );
         if (!repzo_measureunit) {
           console.log(
