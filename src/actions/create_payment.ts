@@ -116,7 +116,12 @@ export const create_payment = async (event: EVENT, options: Config) => {
         amount: String(repzo_payment.amount / 1000),
       },
     };
-
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Trying to post payment to qoyod`,
+        qoyod_payment_body
+      )
+      .commit();
     // console.dir(qoyod_payment_body, { depth: null });
 
     const qoyod_payment = await _create(
