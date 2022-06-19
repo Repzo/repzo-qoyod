@@ -19,7 +19,7 @@
   "engines": {},
   "scripts": {
     "lint": "npx prettier --write .",
-    "build": "tsc",
+    "build": "tsc && npm run lint",
     "test": "mocha",
     "mac": "tsc && node ./lib/test.js"
   },
