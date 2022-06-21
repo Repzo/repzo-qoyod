@@ -16,6 +16,7 @@
 - [./src/commands/join] new Command: Join @maramalshen
 - [./src/actions/create_invoice] read key invoice.status from settings @maramalshen
 - New Actions: Transfer & Sync_Client @maramalshen
+- always inject body in response in the actions @maramalshen
 
 ### Changed
 
@@ -25,6 +26,7 @@
 
 - fix bug, get data from repzo with query per_page = 50000 @maramalshen
 - [adjust_inventory.ts] fix bug: get measureunit from the variant.product.sv_measureUnit @maramalshen
+- [create_payment] fix bug in getting qoyod_payment_account_id @maramalshen
 
 ### Removed
 

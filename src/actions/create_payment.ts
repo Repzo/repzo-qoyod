@@ -60,18 +60,20 @@ export const create_payment = async (event: EVENT, options: Config) => {
   const repzo = new Repzo(options.data?.repzoApiKey, { env: options.env });
   const action_sync_id: string = event?.headers?.action_sync_id || uuid();
   const actionLog = new Repzo.ActionLogs(repzo, action_sync_id);
+  let body: Service.Payment.PaymentSchema | any;
   try {
     const result = { created: 0, failed: 0, failed_msg: [] };
     await actionLog.load(action_sync_id);
     await actionLog.addDetail(`Repzo Qoyod: Started Create Payment`).commit();
-    let body: Service.Payment.PaymentSchema | any = event.body;
+    body = event.body;
     try {
       if (body) body = JSON.parse(body);
     } catch (e) {}
     const repzo_payment = body;
-    const rep_id = repzo_payment.creator?.rep;
+    const rep_id =
+      repzo_payment.creator?.type === "rep" ? repzo_payment.creator?._id : null;
     let rep, qoyod_payment_account_id;
-    if (rep_id) {
+    if (repzo_payment.creator?.type === "rep" && rep_id) {
       rep = await repzo.rep.get(rep_id);
       qoyod_payment_account_id = rep.integration_meta?.qoyod_payment_account_id;
     }
@@ -134,12 +136,12 @@ export const create_payment = async (event: EVENT, options: Config) => {
     // console.log(qoyod_payment);
 
     // console.log(result);
-    await actionLog.setStatus("success").setBody(result).commit();
+    await actionLog.setStatus("success", result).setBody(body).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
     console.error(e);
-    await actionLog.setStatus("fail", e).commit();
+    await actionLog.setStatus("fail", e).setBody(body).commit();
     throw e?.response;
   }
 };
