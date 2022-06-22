@@ -4,6 +4,7 @@ import { create_invoice } from "./create_invoice.js";
 import { create_payment } from "./create_payment.js";
 import { create_transfer } from "./create_transfer.js";
 import { create_client } from "./create_client.js";
+import { create_refund } from "./create_refund.js";
 
 export const actions = async (event: any, options: Config) => {
   switch (event.queryStringParameters?.action) {
@@ -15,6 +16,8 @@ export const actions = async (event: any, options: Config) => {
       return await create_transfer(event, options);
     case "create_client":
       return await create_client(event, options);
+    case "create_refund":
+      return await create_refund(event, options);
     default:
       throw `Route: ${event.queryStringParameters?.action} not found`;
   }
@@ -40,5 +43,10 @@ export const actionsList: Action[] = [
     action: "create_client",
     name: "create client",
     description: "create client ..",
+  },
+  {
+    action: "create_refund",
+    name: "create refund",
+    description: "create refund ..",
   },
 ];
