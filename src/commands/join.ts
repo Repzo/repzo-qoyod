@@ -77,6 +77,13 @@ export const join = async (commandEvent: CommandEvent) => {
           join:
             commandEvent?.app?.formData?.transfer?.createTransferHook || false,
         },
+        // refund
+        {
+          app: "repzo-qoyod",
+          action: "create_refund",
+          event: "refund.create",
+          join: commandEvent?.app?.formData?.refunds?.createRefundHook || false,
+        },
       ],
     };
 
