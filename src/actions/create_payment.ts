@@ -4,7 +4,7 @@ import { _fetch, _create, _update, _delete } from "../util.js";
 import { Service } from "repzo/src/types";
 import { v4 as uuid } from "uuid";
 
-interface QoyodPayment {
+interface QoyodPaymentInvoice {
   invoice_payment: {
     reference: string;
     invoice_id: string;
@@ -56,13 +56,24 @@ interface QoyodInvoices {
   invoices: QoyodInvoice[];
 }
 
+interface QoyodReceipt {
+  receipt: {
+    contact_id: string;
+    reference: string;
+    kind: "received";
+    account_id: number;
+    amount: number;
+    description?: string;
+    date: string;
+  };
+}
+
 export const create_payment = async (event: EVENT, options: Config) => {
   const repzo = new Repzo(options.data?.repzoApiKey, { env: options.env });
   const action_sync_id: string = event?.headers?.action_sync_id || uuid();
   const actionLog = new Repzo.ActionLogs(repzo, action_sync_id);
   let body: Service.Payment.PaymentSchema | any;
   try {
-    const result = { created: 0, failed: 0, failed_msg: [] };
     await actionLog.load(action_sync_id);
     await actionLog.addDetail(`Repzo Qoyod: Started Create Payment`).commit();
     body = event.body;
@@ -83,6 +94,65 @@ export const create_payment = async (event: EVENT, options: Config) => {
         `Create Payment Failed >> payment.client was missed the integration.qoyod_id`
       );
 
+    let result;
+    if (repzo_payment.LinkedTxn?.Txn_serial_number?.formatted)
+      result = await create_invoice_payment({
+        repzo_payment,
+        options,
+        qoyod_payment_account_id,
+        actionLog,
+      });
+    else
+      result = await create_receipt({
+        repzo_payment,
+        options,
+        qoyod_payment_account_id,
+        actionLog,
+        qoyod_client,
+      });
+
+    await actionLog.setStatus("success", result).setBody(body).commit();
+    return result;
+  } catch (e: any) {
+    //@ts-ignore
+    console.error(e);
+    await actionLog.setStatus("fail", e).setBody(body).commit();
+    throw e?.response;
+  }
+};
+
+const get_qoyod_invoices = async (
+  serviceEndPoint: string,
+  serviceApiKey: string,
+  query?: string
+): Promise<QoyodInvoices> => {
+  try {
+    const qoyod_invoices: QoyodInvoices = await _fetch(
+      serviceEndPoint,
+      `/invoices${query ? query : ""}`,
+      { "API-KEY": serviceApiKey }
+    );
+    if (!qoyod_invoices.hasOwnProperty("invoices"))
+      qoyod_invoices.invoices = [];
+    return qoyod_invoices;
+  } catch (e: any) {
+    if (e.response.status == 404) return { invoices: [] };
+    throw e;
+  }
+};
+
+const create_invoice_payment = async ({
+  repzo_payment,
+  options,
+  qoyod_payment_account_id,
+  actionLog,
+}: {
+  repzo_payment: Service.Payment.PaymentSchema | any;
+  options: Config;
+  qoyod_payment_account_id?: number;
+  actionLog: any;
+}) => {
+  try {
     const invoice_reference =
       repzo_payment.LinkedTxn?.Txn_serial_number?.formatted;
 
@@ -107,7 +177,7 @@ export const create_payment = async (event: EVENT, options: Config) => {
       );
     // console.log(options.data.paymentAccountId);
 
-    const qoyod_payment_body: QoyodPayment = {
+    const qoyod_payment_body: QoyodPaymentInvoice = {
       invoice_payment: {
         reference: repzo_payment.serial_number.formatted,
         invoice_id: qoyod_invoice.id.toString(),
@@ -135,33 +205,60 @@ export const create_payment = async (event: EVENT, options: Config) => {
 
     // console.log(qoyod_payment);
 
-    // console.log(result);
-    await actionLog.setStatus("success", result).setBody(body).commit();
-    return result;
-  } catch (e: any) {
-    //@ts-ignore
-    console.error(e);
-    await actionLog.setStatus("fail", e).setBody(body).commit();
-    throw e?.response;
+    return qoyod_payment;
+  } catch (e) {
+    throw e;
   }
 };
 
-const get_qoyod_invoices = async (
-  serviceEndPoint: string,
-  serviceApiKey: string,
-  query?: string
-): Promise<QoyodInvoices> => {
+const create_receipt = async ({
+  repzo_payment,
+  options,
+  qoyod_payment_account_id,
+  actionLog,
+  qoyod_client,
+}: {
+  repzo_payment: Service.Payment.PaymentSchema | any;
+  options: Config;
+  qoyod_payment_account_id?: number;
+  actionLog: any;
+  qoyod_client: any;
+}) => {
   try {
-    const qoyod_invoices: QoyodInvoices = await _fetch(
-      serviceEndPoint,
-      `/invoices${query ? query : ""}`,
-      { "API-KEY": serviceApiKey }
+    const qoyod_payment_body: QoyodReceipt = {
+      receipt: {
+        contact_id: qoyod_client.integration_meta?.qoyod_id,
+        reference: repzo_payment.serial_number.formatted,
+        kind: "received",
+        account_id: qoyod_payment_account_id
+          ? qoyod_payment_account_id
+          : options.data.paymentAccountId,
+        amount: repzo_payment.amount / 1000,
+        // description: "Testing api",
+        date: repzo_payment.paytime,
+      },
+    };
+
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Trying to post payment to qoyod`,
+        qoyod_payment_body
+      )
+      .commit();
+
+    // console.dir(qoyod_payment_body, { depth: null });
+
+    const qoyod_payment = await _create(
+      options.serviceEndPoint,
+      "/receipts",
+      qoyod_payment_body,
+      { "API-KEY": options.data.serviceApiKey }
     );
-    if (!qoyod_invoices.hasOwnProperty("invoices"))
-      qoyod_invoices.invoices = [];
-    return qoyod_invoices;
-  } catch (e: any) {
-    if (e.response.status == 404) return { invoices: [] };
+
+    // console.log(qoyod_payment);
+
+    return qoyod_payment;
+  } catch (e) {
     throw e;
   }
 };
