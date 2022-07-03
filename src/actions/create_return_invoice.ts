@@ -19,8 +19,8 @@
 // interface QoyodInvoice {
 //   invoice: {
 //     contact_id: number; // client_id
-//     // reference: string; // serial_number
-//     // description?: string;
+// reference: string; // serial_number
+// description?: string;
 //     issue_date: string;
 //     due_date: string;
 //     status: "Draft" | "Approved";
@@ -31,42 +31,48 @@
 //       [key: string]: string;
 //     };
 //   };
+//   credit_note: {
+//     contact_id: number; // client_id
+//     issue_date: string;
+//     status: "Draft" | "Approved";
+//     inventory_id: string; // warehouse_id
+//     term_conditions?: string;
+//     notes?: string;
+//     line_items: [
+//       {
+//         product_id: 1;
+//         description: "استرجاع";
+//         unit_price: "987.0";
+//         quantity: "1.0";
+//         discount_percent: "0.0";
+//         tax_percent: "5.0";
+//       },
+//     ];
+//     custom_fields?: {
+//       [key: string]: string;
+//     };
+//   };
 // }
 
-// {
-//     "credit_note": {
-//         "contact_id": 2,
-//         "issue_date": "2019-10-30",
-// 		"status": "Approved",
-// 		"inventory_id":"1",
-// 		"term_conditions": "",
-//     	"notes": "",
-//         "line_items": [
-//             {
-//                 "product_id": 1,
-//                 "description": "استرجاع",
-//                 "unit_price": "987.0",
-//                 "quantity": "1.0",
-//                 "discount_percent": "0.0",
-//                 "tax_percent": "5.0"
-//             }
-//         ]
-//     }
-// }
-
-// export const create_invoice = async (event: EVENT, options: Config) => {
+// export const create_return_invoice = async (event: EVENT, options: Config) => {
 //   const repzo = new Repzo(options.data?.repzoApiKey, { env: options.env });
 //   const action_sync_id: string = event?.headers?.action_sync_id || uuid();
 //   const actionLog = new Repzo.ActionLogs(repzo, action_sync_id);
+//   let body: Service.FullInvoice.InvoiceSchema | any;
 //   try {
 //     // console.log("create_invoice");
 //     await actionLog.load(action_sync_id);
-//     await actionLog.addDetail(`Repzo Qoyod: Started Create Invoice`).commit();
 
-//     let body: Service.FullInvoice.InvoiceSchema | any = event.body;
+//     body = event.body;
 //     try {
 //       if (body) body = JSON.parse(body);
 //     } catch (e) {}
+
+//     await actionLog
+//       .addDetail(
+//         `Repzo Qoyod: Started Create Invoice - ${body?.serial_number?.formatted}`,
+//       )
+//       .commit();
 
 //     const result = { created: 0, failed: 0, failed_msg: [] };
 
@@ -95,11 +101,13 @@
 //     });
 
 //     const repzo_variants = await repzo.variant.find({
-//       _id: Object.keys(repzo_invoice_variant_ids),per_page: 50000,
+//       _id: Object.keys(repzo_invoice_variant_ids),
+//       per_page: 50000,
 //     });
 
 //     const repzo_measureunits = await repzo.measureunit.find({
 //       _id: Object.keys(repzo_invoice_measureunit_ids),
+//       per_page: 50000,
 //     });
 
 //     const qoyod_invoice_items: QoyodInvoiceItem[] = [];
@@ -134,7 +142,7 @@
 //       });
 //     }
 
-//     const qoyod_credit_notes_body: QoyodInvoice = {
+//     const qoyod_invoice_body: QoyodInvoice = {
 //       invoice: {
 //         contact_id: qoyod_client.integration_meta?.qoyod_id, // (repzo_invoice.client_id as any).integration_meta?.qoyod_id,
 //         reference: repzo_invoice.serial_number.formatted,
@@ -148,23 +156,28 @@
 //       },
 //     };
 
-//     // console.dir(qoyod_credit_notes_body, { depth: null });
+//     // console.dir(qoyod_invoice_body, { depth: null });
 
-//     const qoyod_credit_note = await _create(
+//     const qoyod_invoice = await _create(
 //       options.serviceEndPoint,
-//       "/credit_notes",
-//       qoyod_credit_notes_body,
+//       "/invoices",
+//       qoyod_invoice_body,
 //       { "API-KEY": options.data.serviceApiKey },
 //     );
 
-//     // console.log(qoyod_credit_note);
+//     // console.log(qoyod_invoice);
 //     // console.log(result);
-//     await actionLog.setStatus("success").setBody(result).commit();
+
+//     await actionLog
+//       .setStatus("success", result)
+//       .setBody(body)
+//       .setMeta(qoyod_invoice_body)
+//       .commit();
 //     return result;
 //   } catch (e: any) {
 //     //@ts-ignore
 //     console.error(e);
-//     await actionLog.setStatus("fail", e).commit();
+//     await actionLog.setStatus("fail", e).setBody(body).commit();
 //     throw e?.response;
 //   }
 // };

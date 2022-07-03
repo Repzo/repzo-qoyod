@@ -30,12 +30,17 @@ export const create_transfer = async (event: EVENT, options: Config) => {
   try {
     console.log("create_transfer");
     await actionLog.load(action_sync_id);
-    await actionLog.addDetail(`Repzo Qoyod: Started Create Transfer`).commit();
 
     body = event.body;
     try {
       if (body) body = JSON.parse(body);
     } catch (e) {}
+
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Started Create Transfer - ${body?.serial_number?.formatted}`
+      )
+      .commit();
 
     const result = { created: 0, failed: 0, failed_msg: [] };
 
@@ -114,7 +119,11 @@ export const create_transfer = async (event: EVENT, options: Config) => {
 
     console.log(qoyod_transfer);
     console.log(result);
-    await actionLog.setStatus("success", result).setBody(body).commit();
+    await actionLog
+      .setStatus("success", result)
+      .setBody(body)
+      .setMeta(qoyod_transfer_body)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore

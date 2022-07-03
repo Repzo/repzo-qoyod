@@ -75,11 +75,15 @@ export const create_payment = async (event: EVENT, options: Config) => {
   let body: Service.Payment.PaymentSchema | any;
   try {
     await actionLog.load(action_sync_id);
-    await actionLog.addDetail(`Repzo Qoyod: Started Create Payment`).commit();
     body = event.body;
     try {
       if (body) body = JSON.parse(body);
     } catch (e) {}
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Started Create Payment - ${body?.serial_number?.formatted}`
+      )
+      .commit();
     const repzo_payment = body;
     const rep_id =
       repzo_payment.creator?.type === "rep" ? repzo_payment.creator?._id : null;
@@ -111,7 +115,11 @@ export const create_payment = async (event: EVENT, options: Config) => {
         qoyod_client,
       });
 
-    await actionLog.setStatus("success", result).setBody(body).commit();
+    await actionLog
+      .setStatus("success", result)
+      .setBody(body)
+      .setMeta(qoyod_payment_account_id)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore

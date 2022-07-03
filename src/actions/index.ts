@@ -2,7 +2,7 @@ import { Config, Action } from "../types";
 import { EVENT } from "../types";
 import { create_invoice } from "./create_invoice.js";
 import { create_payment } from "./create_payment.js";
-import { create_transfer } from "./create_transfer.js";
+// import { create_transfer } from "./create_transfer.js";
 import { create_client } from "./create_client.js";
 import { create_refund } from "./create_refund.js";
 
@@ -12,8 +12,8 @@ export const actions = async (event: any, options: Config) => {
       return await create_invoice(event, options);
     case "create_payment":
       return await create_payment(event, options);
-    case "create_transfer":
-      return await create_transfer(event, options);
+    // case "create_transfer":
+    // return await create_transfer(event, options);
     case "create_client":
       return await create_client(event, options);
     case "create_refund":
@@ -34,11 +34,11 @@ export const actionsList: Action[] = [
     name: "create payment",
     description: "create payment ..",
   },
-  {
-    action: "create_transfer",
-    name: "create transfer",
-    description: "create transfer ..",
-  },
+  // {
+  //   action: "create_transfer",
+  //   name: "create transfer",
+  //   description: "create transfer ..",
+  // },
   {
     action: "create_client",
     name: "create client",
