@@ -41,14 +41,17 @@ export const create_invoice = async (event: EVENT, options: Config) => {
   try {
     // console.log("create_invoice");
     await actionLog.load(action_sync_id);
-    await actionLog.addDetail(`Repzo Qoyod: Started Create Invoice`).commit();
 
     body = event.body;
     try {
       if (body) body = JSON.parse(body);
     } catch (e) {}
 
-    const result = { created: 0, failed: 0, failed_msg: [] };
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Started Create Invoice - ${body?.serial_number?.formatted}`
+      )
+      .commit();
 
     const repzo_invoice = body;
 
@@ -107,7 +110,10 @@ export const create_invoice = async (event: EVENT, options: Config) => {
         product_id: repzo_variant?.integration_meta?.qoyod_id,
         description: "",
         quantity: repzo_item.qty,
-        unit_price: repzo_item.discounted_price / 1000,
+        unit_price:
+          ((repzo_item?.measureunit?.factor || 1) *
+            repzo_item.discounted_price) /
+          1000,
         unit_type: repzo_measureunit?.integration_meta?.qoyod_id,
         // discount: repzo_item.discount_value,
         // discount_type: "amount", // "percentage" | "amount"; // default percentage
@@ -132,17 +138,20 @@ export const create_invoice = async (event: EVENT, options: Config) => {
 
     // console.dir(qoyod_invoice_body, { depth: null });
 
-    const qoyod_invoice = await _create(
+    const result = await _create(
       options.serviceEndPoint,
       "/invoices",
       qoyod_invoice_body,
       { "API-KEY": options.data.serviceApiKey }
     );
 
-    // console.log(qoyod_invoice);
     // console.log(result);
 
-    await actionLog.setStatus("success", result).setBody(body).commit();
+    await actionLog
+      .setStatus("success", result)
+      .setBody(body)
+      .setMeta(qoyod_invoice_body)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore

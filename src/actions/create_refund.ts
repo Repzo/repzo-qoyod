@@ -23,11 +23,17 @@ export const create_refund = async (event: EVENT, options: Config) => {
   let body: Service.Refund.RefundSchema | any;
   try {
     await actionLog.load(action_sync_id);
-    await actionLog.addDetail(`Repzo Qoyod: Started Create Refund`).commit();
     body = event.body;
     try {
       if (body) body = JSON.parse(body);
     } catch (e) {}
+
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Started Create Refund - ${body?.serial_number?.formatted}`
+      )
+      .commit();
+
     const repzo_refund = body;
     const rep_id =
       repzo_refund.creator?.type === "rep" ? repzo_refund.creator?._id : null;
@@ -73,9 +79,13 @@ export const create_refund = async (event: EVENT, options: Config) => {
       { "API-KEY": options.data.serviceApiKey }
     );
 
-    // console.log(qoyod_refund);
+    // console.log(result);
 
-    await actionLog.setStatus("success", result).setBody(body).commit();
+    await actionLog
+      .setStatus("success", result)
+      .setBody(body)
+      .setMeta(qoyod_refund_body)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore

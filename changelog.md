@@ -19,6 +19,7 @@
 - always inject body in response in the actions @maramalshen
 - divide create_payment to create_invoice_payment & create_receipt @maramalshen
 - [actions/create_refund] new action: refund @maramalshen
+- [actions/create_return_invoice] new action: credit notes @maramalshen
 
 ### Changed
 

@@ -23,25 +23,28 @@ export const join = async (commandEvent: CommandEvent) => {
     const body: Service.JoinActionsWeHook.Data = {
       data: [
         // invoice
+        // {
+        //   app: "repzo-qoyod",
+        //   action: "create_invoice",
+        //   event: "invoice.create",
+        //   join:
+        //     commandEvent?.app?.formData?.invoices?.createInvoiceHook || false,
+        // },
         {
           app: "repzo-qoyod",
           action: "create_invoice",
-          event: "invoice.create",
+          event: "invoiceItems.create",
           join:
             commandEvent?.app?.formData?.invoices?.createInvoiceHook || false,
         },
-        // {
-        //   app: "repzo-qoyod",
-        //   action: "create_invoice",
-        //   event: "invoiceItems.create",
-        //   join: false,
-        // },
-        // {
-        //   app: "repzo-qoyod",
-        //   action: "create_invoice",
-        //   event: "returnItems.create",
-        //   join: false,
-        // },
+        {
+          app: "repzo-qoyod",
+          action: "create_creditNote",
+          event: "returnItems.create",
+          join:
+            commandEvent?.app?.formData?.invoices?.createCreditNoteHook ||
+            false,
+        },
         // payment
         {
           app: "repzo-qoyod",

@@ -20,16 +20,19 @@ export const create_client = async (event: EVENT, options: Config) => {
   const actionLog = new Repzo.ActionLogs(repzo, action_sync_id);
   let body: Service.Client.ClientSchema | any;
   try {
-    console.log("create_client");
+    // console.log("create_client");
     await actionLog.load(action_sync_id);
-    await actionLog.addDetail(`Repzo Qoyod: Started Create Client`).commit();
 
     body = event.body;
     try {
       if (body) body = JSON.parse(body);
     } catch (e) {}
 
-    const result = { created: 0, failed: 0, failed_msg: [] };
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Started Create Client - ${body?.serial_number?.formatted}`
+      )
+      .commit();
 
     const repzo_client: Service.Client.ClientSchema = body;
 
@@ -43,18 +46,22 @@ export const create_client = async (event: EVENT, options: Config) => {
       },
     };
 
-    console.dir(qoyod_client_body, { depth: null });
+    // console.dir(qoyod_client_body, { depth: null });
 
-    const qoyod_client = await _create(
+    const result = await _create(
       options.serviceEndPoint,
       "/customers",
       qoyod_client_body,
       { "API-KEY": options.data.serviceApiKey }
     );
 
-    console.log(qoyod_client);
-    console.log(result);
-    await actionLog.setStatus("success", result).setBody(body).commit();
+    // console.log(result);
+
+    await actionLog
+      .setStatus("success", result)
+      .setBody(body)
+      .setMeta(qoyod_client_body)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
