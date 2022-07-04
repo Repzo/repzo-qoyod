@@ -20,7 +20,7 @@ export const create_client = async (event: EVENT, options: Config) => {
   const actionLog = new Repzo.ActionLogs(repzo, action_sync_id);
   let body: Service.Client.ClientSchema | any;
   try {
-    console.log("create_client");
+    // console.log("create_client");
     await actionLog.load(action_sync_id);
 
     body = event.body;
@@ -34,8 +34,6 @@ export const create_client = async (event: EVENT, options: Config) => {
       )
       .commit();
 
-    const result = { created: 0, failed: 0, failed_msg: [] };
-
     const repzo_client: Service.Client.ClientSchema = body;
 
     const qoyod_client_body: QoyodClient = {
@@ -48,17 +46,17 @@ export const create_client = async (event: EVENT, options: Config) => {
       },
     };
 
-    console.dir(qoyod_client_body, { depth: null });
+    // console.dir(qoyod_client_body, { depth: null });
 
-    const qoyod_client = await _create(
+    const result = await _create(
       options.serviceEndPoint,
       "/customers",
       qoyod_client_body,
       { "API-KEY": options.data.serviceApiKey }
     );
 
-    // console.log(qoyod_client);
     // console.log(result);
+
     await actionLog
       .setStatus("success", result)
       .setBody(body)

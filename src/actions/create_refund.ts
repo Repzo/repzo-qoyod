@@ -79,7 +79,7 @@ export const create_refund = async (event: EVENT, options: Config) => {
       { "API-KEY": options.data.serviceApiKey }
     );
 
-    // console.log(qoyod_refund);
+    // console.log(result);
 
     await actionLog
       .setStatus("success", result)
