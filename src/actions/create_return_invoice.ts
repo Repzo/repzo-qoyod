@@ -57,7 +57,7 @@ export const create_creditNote = async (event: EVENT, options: Config) => {
     const qoyod_client = await repzo.client.get(repzo_invoice.client_id);
     if (!qoyod_client.integration_meta?.qoyod_id)
       throw new Error(
-        `Sync Invoice Failed >> invoice.client was missed the integration.qoyod_id`
+        `Sync Invoice Failed >> invoice.client: ${repzo_invoice.client_id} - ${repzo_invoice.client_name} was missed the integration.qoyod_id`
       );
 
     const repzo_invoice_warehouse = await repzo.warehouse.get(
@@ -65,7 +65,7 @@ export const create_creditNote = async (event: EVENT, options: Config) => {
     );
     if (!repzo_invoice_warehouse.integration_meta?.qoyod_id)
       throw new Error(
-        `Sync Invoice Failed >> invoice.origin_warehouse was missed the integration.qoyod_id`
+        `Sync Invoice Failed >> invoice.origin_warehouse: ${repzo_invoice.origin_warehouse} was missed the integration.qoyod_id`
       );
 
     const repzo_invoice_variant_ids: any = {};
@@ -135,6 +135,7 @@ export const create_creditNote = async (event: EVENT, options: Config) => {
     };
 
     // console.dir(qoyod_creditNote_body, { depth: null });
+    actionLog.setMeta(qoyod_creditNote_body);
 
     const result = await _create(
       options.serviceEndPoint,
@@ -145,16 +146,12 @@ export const create_creditNote = async (event: EVENT, options: Config) => {
 
     // console.log(result);
 
-    await actionLog
-      .setStatus("success", result)
-      .setBody(body)
-      .setMeta(qoyod_creditNote_body)
-      .commit();
+    await actionLog.setStatus("success", result).setBody(body).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e);
+    console.error(e?.response || e);
     await actionLog.setStatus("fail", e).setBody(body).commit();
-    throw e?.response;
+    throw e;
   }
 };

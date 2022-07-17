@@ -46,6 +46,7 @@ export const create_client = async (event: EVENT, options: Config) => {
       },
     };
 
+    actionLog.setMeta(qoyod_client_body);
     // console.dir(qoyod_client_body, { depth: null });
 
     const result = await _create(
@@ -57,16 +58,12 @@ export const create_client = async (event: EVENT, options: Config) => {
 
     // console.log(result);
 
-    await actionLog
-      .setStatus("success", result)
-      .setBody(body)
-      .setMeta(qoyod_client_body)
-      .commit();
+    await actionLog.setStatus("success", result).setBody(body).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e);
+    console.error(e?.response || e);
     await actionLog.setStatus("fail", e).setBody(body).commit();
-    throw e?.response;
+    throw e;
   }
 };

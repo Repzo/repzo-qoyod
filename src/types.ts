@@ -76,5 +76,11 @@ export interface Result {
   created: number;
   updated: number;
   failed: number;
-  failed_msg: any[];
 }
+
+export type FailedDocsReport = {
+  method: "create" | "update" | "delete" | "fetchingData";
+  doc_id?: string;
+  doc?: any;
+  error_message: any;
+}[];

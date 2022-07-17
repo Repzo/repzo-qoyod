@@ -1,6 +1,12 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent, Result } from "../types";
+import {
+  EVENT,
+  Config,
+  CommandEvent,
+  Result,
+  FailedDocsReport,
+} from "../types";
 import {
   _fetch,
   _create,
@@ -8,6 +14,7 @@ import {
   _delete,
   update_bench_time,
   updateAt_query,
+  set_error,
 } from "../util.js";
 
 interface QoyodProduct {
@@ -76,8 +83,8 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       created: 0,
       updated: 0,
       failed: 0,
-      failed_msg: [],
     };
+    const failed_docs_report: FailedDocsReport = [];
 
     const qoyod_products: QoyodProducts = await get_qoyod_products(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
@@ -176,9 +183,16 @@ export const addProducts = async (commandEvent: CommandEvent) => {
         console.log(
           `Update product Failed >> Category with integration_meta.id: ${nameSpace}_${qoyod_product.category_id} was not found`
         );
-        result.failed_msg.push(
-          `Update product Failed >> Category with integration_meta.id: ${nameSpace}_${qoyod_product.category_id} was not found`
-        );
+        failed_docs_report.push({
+          method: "fetchingData",
+          doc: {
+            repzo_product: repzo_product?._id,
+            repzo_product_name: repzo_product?.name,
+            qoyod_product: qoyod_product?.id,
+            qoyod_product_name: qoyod_product?.name_ar,
+          },
+          error_message: `Update product Failed >> Category with integration_meta.id: ${nameSpace}_${qoyod_product.category_id} was not found`,
+        });
         result.failed++;
         continue;
       }
@@ -192,9 +206,16 @@ export const addProducts = async (commandEvent: CommandEvent) => {
         console.log(
           `Update product Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_product.unit_type} was not found`
         );
-        result.failed_msg.push(
-          `Update product Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_product.unit_type} was not found`
-        );
+        failed_docs_report.push({
+          method: "fetchingData",
+          doc: {
+            repzo_product: repzo_product?._id,
+            repzo_product_name: repzo_product?.name,
+            qoyod_product: qoyod_product?.id,
+            qoyod_product_name: qoyod_product?.name_ar,
+          },
+          error_message: `Update product Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_product.unit_type} was not found`,
+        });
         result.failed++;
         continue;
       }
@@ -207,9 +228,16 @@ export const addProducts = async (commandEvent: CommandEvent) => {
         console.log(
           `Update product Failed >> MeasureUnit Family with integration_meta.id: ${nameSpace}_${qoyod_product.sku} was not found`
         );
-        result.failed_msg.push(
-          `Update product Failed >> MeasureUnit Family with integration_meta.id: ${nameSpace}_${qoyod_product.sku} was not found`
-        );
+        failed_docs_report.push({
+          method: "fetchingData",
+          doc: {
+            repzo_product: repzo_product?._id,
+            repzo_product_name: repzo_product?.name,
+            qoyod_product: qoyod_product?.id,
+            qoyod_product_name: qoyod_product?.name_ar,
+          },
+          error_message: `Update product Failed >> MeasureUnit Family with integration_meta.id: ${nameSpace}_${qoyod_product.sku} was not found`,
+        });
         result.failed++;
         continue;
       }
@@ -229,13 +257,20 @@ export const addProducts = async (commandEvent: CommandEvent) => {
             qoyod_product.is_inclusive ? "inclusive" : "additive"
           } was not found`
         );
-        result.failed_msg.push(
-          `Update product Failed >> Tax with integration_meta.id: ${nameSpace}_${
+        failed_docs_report.push({
+          method: "fetchingData",
+          doc: {
+            repzo_product: repzo_product?._id,
+            repzo_product_name: repzo_product?.name,
+            qoyod_product: qoyod_product?.id,
+            qoyod_product_name: qoyod_product?.name_ar,
+          },
+          error_message: `Update product Failed >> Tax with integration_meta.id: ${nameSpace}_${
             qoyod_product.tax_id
           }_${
             qoyod_product.is_inclusive ? "inclusive" : "additive"
-          } was not found`
-        );
+          } was not found`,
+        });
         result.failed++;
         continue;
       }
@@ -295,11 +330,11 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           result.created++;
         } catch (e: any) {
           console.log("Create product Failed >> ", e?.response, body);
-          result.failed_msg.push(
-            "Create product Failed >> ",
-            e?.response,
-            body
-          );
+          failed_docs_report.push({
+            method: "create",
+            doc: body,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       } else {
@@ -332,11 +367,12 @@ export const addProducts = async (commandEvent: CommandEvent) => {
           result.updated++;
         } catch (e: any) {
           console.log("Update product Failed >> ", e, body);
-          result.failed_msg.push(
-            "Update product Failed >> ",
-            e?.response,
-            body
-          );
+          failed_docs_report.push({
+            method: "update",
+            doc_id: repzo_product?._id,
+            doc: body,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       }
@@ -350,13 +386,19 @@ export const addProducts = async (commandEvent: CommandEvent) => {
       bench_time_key,
       new_bench_time
     );
-    await commandLog.setStatus("success").setBody(result).commit();
+    await commandLog
+      .setStatus(
+        "success",
+        failed_docs_report.length ? failed_docs_report : null
+      )
+      .setBody(result)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e?.response?.data);
+    console.error(e?.response?.data || e);
     await commandLog.setStatus("fail", e).commit();
-    throw e?.response;
+    throw e;
   }
 };
 

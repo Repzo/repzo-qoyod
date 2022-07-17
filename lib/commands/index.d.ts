@@ -7,7 +7,6 @@ export declare const commands: (CommandEvent: CommandEvent) => Promise<
       repzo_total: number;
       disabled: number;
       failed: number;
-      failed_msg: any[];
     }
 >;
 export declare const commandsList: Command[];

@@ -1,6 +1,12 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent, Result } from "../types";
+import {
+  EVENT,
+  Config,
+  CommandEvent,
+  Result,
+  FailedDocsReport,
+} from "../types";
 import {
   _fetch,
   _create,
@@ -8,6 +14,7 @@ import {
   _delete,
   update_bench_time,
   updateAt_query,
+  set_error,
 } from "../util.js";
 // var config = ;
 
@@ -46,10 +53,23 @@ interface WarehouseBody {
 }
 
 export const sync_inventory = async (commandEvent: CommandEvent) => {
+  const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
+    env: commandEvent.env,
+  });
+  const commandLog = new Repzo.CommandLog(
+    repzo,
+    commandEvent.app,
+    commandEvent.command
+  );
   try {
     console.log("sync_inventory");
     const new_bench_time = new Date().toISOString();
     const bench_time_key = "bench_time_inventory";
+
+    await commandLog.load(commandEvent.sync_id);
+    await commandLog
+      .addDetail("Repzo Qoyod: Started Syncing Warehouses")
+      .commit();
 
     const nameSpace = commandEvent.nameSpace.join("_");
     const result: Result = {
@@ -58,8 +78,8 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
       created: 0,
       updated: 0,
       failed: 0,
-      failed_msg: [],
     };
+    const failed_docs_report: FailedDocsReport = [];
 
     const qoyod_inventories: QoyodInventories = await get_qoyod_inventories(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
@@ -67,6 +87,14 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
       updateAt_query("", commandEvent.app.options_formData, bench_time_key)
     );
     result.qoyod_total = qoyod_inventories?.inventories?.length;
+
+    await commandLog
+      .addDetail(
+        `${qoyod_inventories?.inventories?.length} warehouses changed since ${
+          commandEvent.app.options_formData[bench_time_key] || "ever"
+        }`
+      )
+      .commit();
 
     const db = new DataSet([], { autoIndex: false });
     db.createIndex({
@@ -81,14 +109,17 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
       (inventory: QoyodInventory) => `${nameSpace}_${inventory.id}`
     ); // ??
 
-    const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
-      env: commandEvent.env,
-    });
     const repzo_inventories = await repzo.warehouse.find({
       "integration_meta.id": inventory_query,
       per_page: 50000,
     });
     result.repzo_total = repzo_inventories?.data?.length;
+    await commandLog
+      .addDetail(
+        `${repzo_inventories?.data?.length} warehouses in Repzo was matched the integration.id`
+      )
+      .commit();
+
     for (let i = 0; i < qoyod_inventories.inventories.length; i++) {
       const qoyod_inventory: QoyodInventory = qoyod_inventories.inventories[i];
       const repzo_inventory = repzo_inventories.data.find(
@@ -117,6 +148,11 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
           result.created++;
         } catch (e: any) {
           console.log("Create inventory Failed >> ", e?.response, body);
+          failed_docs_report.push({
+            method: "create",
+            doc: body,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       } else {
@@ -135,6 +171,12 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
           result.updated++;
         } catch (e) {
           console.log("Update inventory Failed >> ", e, body);
+          failed_docs_report.push({
+            method: "update",
+            doc_id: repzo_inventory?._id,
+            doc: body,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       }
@@ -148,11 +190,19 @@ export const sync_inventory = async (commandEvent: CommandEvent) => {
       bench_time_key,
       new_bench_time
     );
+    await commandLog
+      .setStatus(
+        "success",
+        failed_docs_report.length ? failed_docs_report : null
+      )
+      .setBody(result)
+      .commit();
 
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e?.response?.data);
+    console.error(e?.response?.data || e);
+    await commandLog.setStatus("fail", e).commit();
     throw e?.response;
   }
 };

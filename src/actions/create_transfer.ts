@@ -47,7 +47,7 @@ export const create_transfer = async (event: EVENT, options: Config) => {
         await repzo.warehouse.get(repzo_transfer.from);
       if (!repzo_transfer_FROM_warehouse?.integration_meta?.qoyod_id)
         throw new Error(
-          `Sync Transfer Failed >> transfer.from was missed the integration.qoyod_id`
+          `Sync Transfer Failed >> transfer.from: ${repzo_transfer.from} - ${repzo_transfer_FROM_warehouse?.name} was missed the integration.qoyod_id`
         );
 
       repzo_transfer.from = repzo_transfer_FROM_warehouse;
@@ -59,7 +59,7 @@ export const create_transfer = async (event: EVENT, options: Config) => {
       );
       if (!repzo_transfer_TO_warehouse?.integration_meta?.qoyod_id)
         throw new Error(
-          `Sync Transfer Failed >> transfer.to was missed the integration.qoyod_id`
+          `Sync Transfer Failed >> transfer.to: ${repzo_transfer.to} - ${repzo_transfer_TO_warehouse?.name} was missed the integration.qoyod_id`
         );
 
       repzo_transfer.to = repzo_transfer_TO_warehouse;
@@ -104,6 +104,7 @@ export const create_transfer = async (event: EVENT, options: Config) => {
       },
     };
 
+    actionLog.setMeta(qoyod_transfer_body);
     // console.dir(qoyod_transfer_body, { depth: null });
 
     const result = await _create(
@@ -114,16 +115,12 @@ export const create_transfer = async (event: EVENT, options: Config) => {
     );
 
     // console.log(result);
-    await actionLog
-      .setStatus("success", result)
-      .setBody(body)
-      .setMeta(qoyod_transfer_body)
-      .commit();
+    await actionLog.setStatus("success", result).setBody(body).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e);
+    console.error(e?.response || e);
     await actionLog.setStatus("fail", e).setBody(body).commit();
-    throw e?.response;
+    throw e;
   }
 };

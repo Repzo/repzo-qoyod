@@ -1,6 +1,12 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent, Result } from "../types";
+import {
+  EVENT,
+  Config,
+  CommandEvent,
+  Result,
+  FailedDocsReport,
+} from "../types";
 import {
   _fetch,
   _create,
@@ -8,6 +14,7 @@ import {
   _delete,
   update_bench_time,
   updateAt_query,
+  set_error,
 } from "../util.js";
 // var config = ;
 
@@ -49,8 +56,8 @@ export const addClients = async (commandEvent: CommandEvent) => {
       created: 0,
       updated: 0,
       failed: 0,
-      failed_msg: [],
     };
+    const failed_docs_report: FailedDocsReport = [];
 
     const qoyod_clients: QoyodClients = await get_qoyod_clients(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
@@ -128,7 +135,11 @@ export const addClients = async (commandEvent: CommandEvent) => {
           result.created++;
         } catch (e: any) {
           console.log("Create Client Failed >> ", e?.response, body);
-          result.failed_msg.push("Create Client Failed >> ", e?.response, body);
+          failed_docs_report.push({
+            method: "create",
+            doc: body,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       } else {
@@ -145,7 +156,12 @@ export const addClients = async (commandEvent: CommandEvent) => {
           result.updated++;
         } catch (e: any) {
           console.log("Update Client Failed >> ", e, body);
-          result.failed_msg.push("Update Client Failed >> ", e?.response, body);
+          failed_docs_report.push({
+            method: "update",
+            doc_id: repzo_client?._id,
+            doc: body,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       }
@@ -159,13 +175,19 @@ export const addClients = async (commandEvent: CommandEvent) => {
       bench_time_key,
       new_bench_time
     );
-    await commandLog.setStatus("success").setBody(result).commit();
+    await commandLog
+      .setStatus(
+        "success",
+        failed_docs_report.length ? failed_docs_report : null
+      )
+      .setBody(result)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e?.response?.data);
+    console.error(e?.response?.data || e);
     await commandLog.setStatus("fail", e).commit();
-    throw e?.response;
+    throw e;
   }
 };
 
@@ -194,14 +216,8 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       repzo_total: number;
       disabled: number;
       failed: number;
-      failed_msg: any[];
-    } = {
-      qoyod_total: 0,
-      repzo_total: 0,
-      disabled: 0,
-      failed: 0,
-      failed_msg: [],
-    };
+    } = { qoyod_total: 0, repzo_total: 0, disabled: 0, failed: 0 };
+    const failed_docs_report: FailedDocsReport = [];
 
     const qoyod_clients: QoyodClients = await get_qoyod_clients(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
@@ -250,8 +266,11 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
           result.disabled++;
         } catch (e: any) {
           console.log("Disable Client Failed >> ", e);
-          result.failed_msg.push("Disable Client Failed >> ", e?.response, {
-            client_id: repzo_client._id,
+          failed_docs_report.push({
+            method: "update",
+            doc_id: repzo_client?._id,
+            doc: { client_id: repzo_client._id },
+            error_message: set_error(e),
           });
           result.failed++;
         }
@@ -266,11 +285,17 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       bench_time_key,
       new_bench_time
     );
-    await commandLog.setStatus("success").setBody(result).commit();
+    await commandLog
+      .setStatus(
+        "success",
+        failed_docs_report.length ? failed_docs_report : null
+      )
+      .setBody(result)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e);
+    console.error(e?.response?.data || e);
     await commandLog.setStatus("fail", e).commit();
     throw e;
   }
