@@ -13,7 +13,6 @@ export declare const Commands: (
       repzo_total: number;
       disabled: number;
       failed: number;
-      failed_msg: any[];
     }
 >;
 export declare const CommandsList: import("./types.js").Command[];

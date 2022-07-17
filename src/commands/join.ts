@@ -2,7 +2,6 @@ import Repzo from "repzo";
 import { Service } from "repzo/lib/types";
 import { EVENT, Config, CommandEvent } from "../types";
 import { _fetch, _create, _update, _delete } from "../util.js";
-import { actionsList } from "../actions/index.js";
 
 export const join = async (commandEvent: CommandEvent) => {
   const repzo = new Repzo(commandEvent.app.formData?.repzoApiKey, {
@@ -103,8 +102,8 @@ export const join = async (commandEvent: CommandEvent) => {
     await commandLog.setStatus("success").setBody(result).commit();
   } catch (e: any) {
     //@ts-ignore
-    console.error(e?.response?.data);
+    console.error(e?.response?.data || e);
     await commandLog.setStatus("fail", e).commit();
-    throw e?.response;
+    throw e;
   }
 };

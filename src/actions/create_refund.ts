@@ -46,7 +46,7 @@ export const create_refund = async (event: EVENT, options: Config) => {
     const qoyod_client = await repzo.client.get(repzo_refund.client_id);
     if (!qoyod_client.integration_meta?.qoyod_id)
       throw new Error(
-        `Create Refund Failed >> refund.client was missed the integration.qoyod_id`
+        `Create Refund Failed >> refund.client: ${repzo_refund.client_id} - ${repzo_refund.client_name} was missed the integration.qoyod_id`
       );
 
     const qoyod_refund_body: QoyodReceipt = {
@@ -71,6 +71,7 @@ export const create_refund = async (event: EVENT, options: Config) => {
       .commit();
 
     // console.dir(qoyod_refund_body, { depth: null });
+    actionLog.setMeta(qoyod_refund_body);
 
     const result = await _create(
       options.serviceEndPoint,
@@ -81,16 +82,12 @@ export const create_refund = async (event: EVENT, options: Config) => {
 
     // console.log(result);
 
-    await actionLog
-      .setStatus("success", result)
-      .setBody(body)
-      .setMeta(qoyod_refund_body)
-      .commit();
+    await actionLog.setStatus("success", result).setBody(body).commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e);
+    console.error(e?.response || e);
     await actionLog.setStatus("fail", e).setBody(body).commit();
-    throw e?.response;
+    throw e;
   }
 };

@@ -1,7 +1,13 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent, Result } from "../types";
-import { _fetch, _create, _update, _delete } from "../util.js";
+import {
+  EVENT,
+  Config,
+  CommandEvent,
+  Result,
+  FailedDocsReport,
+} from "../types";
+import { _fetch, _create, _update, _delete, set_error } from "../util.js";
 import { get_qoyod_products } from "./product.js";
 import { get_qoyod_units, QoyodUnits } from "./measureunit.js";
 
@@ -77,8 +83,8 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
       created: 0,
       updated: 0,
       failed: 0,
-      failed_msg: [],
     };
+    const failed_docs_report: FailedDocsReport = [];
     const qoyod_products: QoyodProducts = await get_qoyod_products(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
       commandEvent.app.formData.serviceApiKey
@@ -167,6 +173,7 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
           qoyod_units,
           repzo_base_unit_id,
           result,
+          failed_docs_report,
         });
         if (res) qoyod_measureunit.repzo_id = res;
         else console.log(`Measure Unit with _id: ${qoyod_measureunit.id}`);
@@ -227,16 +234,12 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
           );
           result.created_families++;
         } catch (e: any) {
-          console.log(
-            "Create Measure Unit Family Failed >> ",
-            e.response,
-            qoyod_family
-          );
-          result.failed_msg.push(
-            "Create Measure Unit Family Failed >> ",
-            e?.response,
-            qoyod_family
-          );
+          // console.log("Create Measure Unit Family Failed >> ", e.response, qoyod_family);
+          failed_docs_report.push({
+            method: "create",
+            doc: qoyod_family,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       } else {
@@ -262,25 +265,32 @@ export const sync_measureunit_family = async (commandEvent: CommandEvent) => {
           );
           result.updated++;
         } catch (e: any) {
-          console.log("Update Measure Unit Failed >> ", e, qoyod_family);
-          result.failed_msg.push(
-            "Update Measure Unit Failed >> ",
-            e?.response,
-            qoyod_family
-          );
+          // console.log("Update Measure Unit Failed >> ", e, qoyod_family);
+          failed_docs_report.push({
+            method: "update",
+            doc_id: repzo_family?._id,
+            doc: qoyod_family,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       }
     }
 
     // console.log(result);
-    await commandLog.setStatus("success").setBody(result).commit();
+    await commandLog
+      .setStatus(
+        "success",
+        failed_docs_report.length ? failed_docs_report : null
+      )
+      .setBody(result)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e?.response?.data);
+    console.error(e?.response?.data || e);
     await commandLog.setStatus("fail", e).commit();
-    throw e?.response;
+    throw e;
   }
 };
 
@@ -292,6 +302,7 @@ const create_measureunit = async ({
   qoyod_units,
   repzo_base_unit_id,
   result,
+  failed_docs_report,
 }: {
   repzo: Repzo;
   qoyod_measureunit: Unit;
@@ -300,6 +311,7 @@ const create_measureunit = async ({
   qoyod_units: QoyodUnits;
   repzo_base_unit_id: any;
   result: any;
+  failed_docs_report: FailedDocsReport;
 }): Promise<string | void> => {
   try {
     const matched_base_unit = qoyod_units?.product_unit_types?.find(
@@ -308,6 +320,11 @@ const create_measureunit = async ({
 
     if (!matched_base_unit) {
       result.failed++;
+      failed_docs_report.push({
+        method: "fetchingData",
+        doc: { qoyod_measureunit: qoyod_measureunit.id },
+        error_message: `Create Secondary Measure unit Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_measureunit.id} was not found`,
+      });
       throw new Error(
         `Create Secondary Measure unit Failed >> MeasureUnit with integration_meta.id: ${nameSpace}_${qoyod_measureunit.id} was not found`
       );
@@ -332,6 +349,11 @@ const create_measureunit = async ({
       return created_unit._id;
     } catch (e: any) {
       console.log("Create Measure Unit Failed >> ", e?.response, body);
+      failed_docs_report.push({
+        method: "create",
+        doc: body,
+        error_message: set_error(e),
+      });
       result.failed++;
     }
   } catch (e) {

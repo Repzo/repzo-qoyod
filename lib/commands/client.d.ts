@@ -9,5 +9,4 @@ export declare const updatedInactiveClients: (
   repzo_total: number;
   disabled: number;
   failed: number;
-  failed_msg: any[];
 }>;

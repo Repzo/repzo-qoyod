@@ -95,7 +95,7 @@ export const create_payment = async (event: EVENT, options: Config) => {
     const qoyod_client = await repzo.client.get(repzo_payment.client_id);
     if (!qoyod_client.integration_meta?.qoyod_id)
       throw new Error(
-        `Create Payment Failed >> payment.client was missed the integration.qoyod_id`
+        `Create Payment Failed >> payment.client: ${repzo_payment.client_id} - ${repzo_payment.client_name} was missed the integration.qoyod_id`
       );
 
     let result;
@@ -123,9 +123,9 @@ export const create_payment = async (event: EVENT, options: Config) => {
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e);
+    console.error(e?.response || e);
     await actionLog.setStatus("fail", e).setBody(body).commit();
-    throw e?.response;
+    throw e;
   }
 };
 

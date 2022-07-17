@@ -1,6 +1,12 @@
 import Repzo from "repzo";
 import DataSet from "data-set-query";
-import { EVENT, Config, CommandEvent, Result } from "../types";
+import {
+  EVENT,
+  Config,
+  CommandEvent,
+  Result,
+  FailedDocsReport,
+} from "../types";
 import {
   _fetch,
   _create,
@@ -8,6 +14,7 @@ import {
   _delete,
   update_bench_time,
   updateAt_query,
+  set_error,
 } from "../util.js";
 
 interface QoyodCategory {
@@ -49,8 +56,8 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       created: 0,
       updated: 0,
       failed: 0,
-      failed_msg: [],
     };
+    const failed_docs_report: FailedDocsReport = [];
 
     const qoyod_categories: QoyodCategories = await get_qoyod_categories(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
@@ -115,12 +122,12 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
           const created_category = await repzo.category.create(body);
           result.created++;
         } catch (e: any) {
-          result.failed_msg.push(
-            "Create Category Failed >> ",
-            e?.response,
-            body
-          );
           console.log("Create Category Failed >> ", e?.response, body);
+          failed_docs_report.push({
+            method: "create",
+            doc: body,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       } else {
@@ -138,12 +145,13 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
           );
           result.updated++;
         } catch (e: any) {
-          result.failed_msg.push(
-            "Update Category Failed >> ",
-            e?.response,
-            body
-          );
           console.log("Update Category Failed >> ", e?.response, body);
+          failed_docs_report.push({
+            method: "update",
+            doc_id: repzo_category?._id,
+            doc: body,
+            error_message: set_error(e),
+          });
           result.failed++;
         }
       }
@@ -157,14 +165,20 @@ export const sync_categories = async (commandEvent: CommandEvent) => {
       bench_time_key,
       new_bench_time
     );
-    await commandLog.setStatus("success").setBody(result).commit();
+    await commandLog
+      .setStatus(
+        "success",
+        failed_docs_report.length ? failed_docs_report : null
+      )
+      .setBody(result)
+      .commit();
 
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e?.response?.data);
+    console.error(e?.response?.data || e);
     await commandLog.setStatus("fail", e).commit();
-    throw e?.response;
+    throw e;
   }
 };
 

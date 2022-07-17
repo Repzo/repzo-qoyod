@@ -48,8 +48,8 @@ export const basic = async (commandEvent: CommandEvent) => {
       .commit();
   } catch (e: any) {
     //@ts-ignore
-    console.error(e?.response?.data);
+    console.error(e?.response?.data || e);
     await commandLog.setStatus("fail", e).commit();
-    throw e?.response;
+    throw e;
   }
 };

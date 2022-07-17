@@ -134,3 +134,24 @@ export const get_data_from_qoyod = async (
     throw e;
   }
 };
+
+export const set_error = (error_res: any): any => {
+  try {
+    if (error_res) {
+      if (typeof error_res == "string") {
+        return { message: error_res };
+      } else if (error_res.message || error_res.response?.data) {
+        return {
+          code: error_res.response?.data?.code,
+          message: error_res.response?.data.message || error_res.message,
+          // responseData: error_res.response?.data,
+        };
+      } else {
+        return error_res;
+      }
+    }
+    return error_res;
+  } catch (e) {
+    throw e;
+  }
+};

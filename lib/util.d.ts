@@ -53,4 +53,5 @@ export declare const get_data_from_qoyod: (
   serviceApiKey: string,
   query?: string | undefined
 ) => Promise<any>;
+export declare const set_error: (error_res: any) => any;
 export {};

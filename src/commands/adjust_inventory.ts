@@ -1,6 +1,6 @@
 import Repzo from "repzo";
-import { CommandEvent, Result } from "../types";
-import { _fetch, _create, _update, _delete } from "../util.js";
+import { CommandEvent, Result, FailedDocsReport } from "../types";
+import { _fetch, _create, _update, _delete, set_error } from "../util.js";
 import { v4 as uuid } from "uuid";
 import { QoyodProducts, get_qoyod_products } from "./product.js";
 
@@ -20,15 +20,14 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       .commit();
 
     const nameSpace = commandEvent.nameSpace.join("_");
-    console.log(nameSpace, " adjust_inventory");
     const result: Result = {
       qoyod_total: 0,
       repzo_total: 0,
       created: 0,
       updated: 0,
       failed: 0,
-      failed_msg: [],
     };
+    const failed_docs_report: FailedDocsReport = [];
 
     const qoyod_products: QoyodProducts = await get_qoyod_products(
       commandEvent.app.available_app.app_settings.serviceEndPoint,
@@ -95,9 +94,15 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
           console.log(
             `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`
           );
-          result.failed_msg.push(
-            `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`
-          );
+          failed_docs_report.push({
+            method: "fetchingData",
+            doc: {
+              qoyod_warehouse_id,
+              qoyod_product: qoyod_product?.id,
+              qoyod_product_name: qoyod_product?.name_ar,
+            },
+            error_message: `Adjust Inventory Failed >> Warehouse with integration_meta.qoyod_id: ${qoyod_warehouse_id} was not found`,
+          });
           result.failed++;
           return;
         }
@@ -112,9 +117,15 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
           console.log(
             `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_product_id} was not found`
           );
-          result.failed_msg.push(
-            `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_product_id} was not found`
-          );
+          failed_docs_report.push({
+            method: "fetchingData",
+            doc: {
+              qoyod_product_id,
+              qoyod_product: qoyod_product?.id,
+              qoyod_product_name: qoyod_product?.name_ar,
+            },
+            error_message: `Adjust Inventory Failed >> Variant with integration_meta.qoyod_id: ${qoyod_product_id} was not found`,
+          });
           result.failed++;
           return;
         }
@@ -144,9 +155,11 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
         console.log(
           `Adjust Inventory Failed >> Warehouse with integration_meta.repzo_id: ${repzo_warehouse_id} was not found`
         );
-        result.failed_msg.push(
-          `Adjust Inventory Failed >> Warehouse with integration_meta.repzo_id: ${repzo_warehouse_id} was not found`
-        );
+        failed_docs_report.push({
+          method: "fetchingData",
+          doc: { repzo_product_inventory, repzo_variant_id },
+          error_message: `Adjust Inventory Failed >> Warehouse with integration_meta.repzo_id: ${repzo_warehouse_id} was not found`,
+        });
         result.failed++;
         return;
       }
@@ -202,17 +215,34 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
 
       // console.log(data);
       if (!data.variants.length) continue;
-      const adjust_inventory_res = await repzo.adjustInventory.create(data);
-      result.created++;
+
+      try {
+        const adjust_inventory_res = await repzo.adjustInventory.create(data);
+        result.created++;
+      } catch (e: any) {
+        console.log("Adjust Inventory Failed >> ", e?.response, data);
+        failed_docs_report.push({
+          method: "create",
+          doc: data,
+          error_message: set_error(e),
+        });
+        result.failed++;
+      }
     }
 
     // console.log(result);
-    await commandLog.setStatus("success").setBody(result).commit();
+    await commandLog
+      .setStatus(
+        "success",
+        failed_docs_report.length ? failed_docs_report : null
+      )
+      .setBody(result)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
-    console.error(e?.response?.data);
+    console.error(e?.response?.data || e);
     await commandLog.setStatus("fail", e).commit();
-    throw e?.response;
+    throw e;
   }
 };
