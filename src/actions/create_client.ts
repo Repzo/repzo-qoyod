@@ -46,8 +46,14 @@ export const create_client = async (event: EVENT, options: Config) => {
       },
     };
 
-    actionLog.setMeta(qoyod_client_body);
+    // actionLog.setMeta(qoyod_client_body);
     // console.dir(qoyod_client_body, { depth: null });
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Client Body - ${qoyod_client_body?.contact?.name}`,
+        qoyod_client_body
+      )
+      .commit();
 
     const result = await _create(
       options.serviceEndPoint,

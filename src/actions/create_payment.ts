@@ -198,7 +198,7 @@ const create_invoice_payment = async ({
     };
     await actionLog
       .addDetail(
-        `Repzo Qoyod: Trying to post payment to qoyod`,
+        `Repzo Qoyod: Payment - ${qoyod_payment_body?.invoice_payment?.reference}`,
         qoyod_payment_body
       )
       .commit();
@@ -249,7 +249,7 @@ const create_receipt = async ({
 
     await actionLog
       .addDetail(
-        `Repzo Qoyod: Trying to post payment to qoyod`,
+        `Repzo Qoyod: Receipt - ${qoyod_payment_body?.receipt?.reference}`,
         qoyod_payment_body
       )
       .commit();

@@ -71,7 +71,13 @@ export const create_refund = async (event: EVENT, options: Config) => {
       .commit();
 
     // console.dir(qoyod_refund_body, { depth: null });
-    actionLog.setMeta(qoyod_refund_body);
+    // actionLog.setMeta(qoyod_refund_body);
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Refund - ${qoyod_refund_body?.receipt?.reference}`,
+        qoyod_refund_body
+      )
+      .commit();
 
     const result = await _create(
       options.serviceEndPoint,

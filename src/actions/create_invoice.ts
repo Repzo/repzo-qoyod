@@ -137,7 +137,13 @@ export const create_invoice = async (event: EVENT, options: Config) => {
     };
 
     // console.dir(qoyod_invoice_body, { depth: null });
-    actionLog.setMeta(qoyod_invoice_body);
+    // actionLog.setMeta(qoyod_invoice_body);
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Invoice - ${qoyod_invoice_body?.invoice?.reference}`,
+        qoyod_invoice_body
+      )
+      .commit();
 
     const result = await _create(
       options.serviceEndPoint,
