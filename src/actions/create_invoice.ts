@@ -154,7 +154,11 @@ export const create_invoice = async (event: EVENT, options: Config) => {
 
     // console.log(result);
 
-    await actionLog.setStatus("success", result).setBody(body).commit();
+    await actionLog
+      .addDetail(`Qoyod Responded with `, result)
+      .setStatus("success")
+      .setBody(body)
+      .commit();
     return result;
   } catch (e: any) {
     //@ts-ignore
