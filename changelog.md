@@ -21,6 +21,7 @@
 - [actions/create_refund] new action: refund @maramalshen
 - [actions/create_return_invoice] new action: credit notes @maramalshen
 - Update Error Logs in Actions & Commands @maramalshen
+- Inject Body of the action in the details.meta @maramalshen
 
 ### Changed
 

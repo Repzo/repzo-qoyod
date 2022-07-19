@@ -135,7 +135,13 @@ export const create_creditNote = async (event: EVENT, options: Config) => {
     };
 
     // console.dir(qoyod_creditNote_body, { depth: null });
-    actionLog.setMeta(qoyod_creditNote_body);
+    // actionLog.setMeta(qoyod_creditNote_body);
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Credit Note - ${qoyod_creditNote_body?.credit_note?.reference}`,
+        qoyod_creditNote_body
+      )
+      .commit();
 
     const result = await _create(
       options.serviceEndPoint,

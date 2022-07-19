@@ -12,6 +12,7 @@ interface QoyodTransferItem {
 
 interface QoyodTransfer {
   inventory_transfer: {
+    reference: string;
     from_location: string; // warehouse_id
     to_location: string; // warehouse_id
     date: string; // "YYYY-MM-DD"
@@ -96,6 +97,7 @@ export const create_transfer = async (event: EVENT, options: Config) => {
 
     const qoyod_transfer_body: QoyodTransfer = {
       inventory_transfer: {
+        reference: repzo_transfer?.serial_number?.formatted,
         from_location: repzo_transfer.from.integration_meta?.qoyod_id,
         to_location: repzo_transfer.to.integration_meta?.qoyod_id,
         date: moment(repzo_transfer.time, "x").format("YYYY-MM-DD"), // timezone ??
@@ -104,8 +106,14 @@ export const create_transfer = async (event: EVENT, options: Config) => {
       },
     };
 
-    actionLog.setMeta(qoyod_transfer_body);
+    // actionLog.setMeta(qoyod_transfer_body);
     // console.dir(qoyod_transfer_body, { depth: null });
+    await actionLog
+      .addDetail(
+        `Repzo Qoyod: Transfer - ${qoyod_transfer_body?.inventory_transfer?.reference}`,
+        qoyod_transfer_body
+      )
+      .commit();
 
     const result = await _create(
       options.serviceEndPoint,
