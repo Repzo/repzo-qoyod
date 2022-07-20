@@ -116,7 +116,8 @@ export const create_payment = async (event: EVENT, options: Config) => {
       });
 
     await actionLog
-      .setStatus("success", result)
+      .addDetail(`Qoyod Responded with `, result)
+      .setStatus("success")
       .setBody(body)
       .setMeta(qoyod_payment_account_id)
       .commit();
