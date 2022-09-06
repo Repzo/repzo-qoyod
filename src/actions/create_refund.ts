@@ -56,7 +56,7 @@ export const create_refund = async (event: EVENT, options: Config) => {
         kind: "paid",
         account_id: qoyod_refund_account_id
           ? qoyod_refund_account_id
-          : options.data.paymentAccountId,
+          : options.data.refundAccountId,
         amount: repzo_refund.amount / 1000,
         // description: "Testing api",
         date: repzo_refund.paytime,
