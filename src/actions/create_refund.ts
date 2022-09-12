@@ -37,10 +37,33 @@ export const create_refund = async (event: EVENT, options: Config) => {
     const repzo_refund = body;
     const rep_id =
       repzo_refund.creator?.type === "rep" ? repzo_refund.creator?._id : null;
-    let rep, qoyod_refund_account_id;
+    let rep,
+      qoyod_refund_account_id,
+      qoyod_payment_account_id,
+      linked_payment_qoyod_payment_account_id,
+      linked_payment_qoyod_refund_account_id;
     if (repzo_refund.creator?.type === "rep" && rep_id) {
       rep = await repzo.rep.get(rep_id);
       qoyod_refund_account_id = rep.integration_meta?.qoyod_refund_account_id;
+      qoyod_payment_account_id = rep.integration_meta?.qoyod_payment_account_id;
+    } else if (repzo_refund?.LinkedTxn?.TxnType == "payment") {
+      // if refund linked to payment then get payment.rep.qoyod_payment_account_id
+      const payments = await repzo.payment.find({
+        "serial_number.formatted":
+          repzo_refund?.LinkedTxn?.Txn_serial_number?.formatted,
+      });
+      const matched_payment = payments?.data?.find(
+        (payment) =>
+          payment?.serial_number?.formatted ==
+          repzo_refund?.LinkedTxn?.Txn_serial_number?.formatted
+      );
+      if (matched_payment && matched_payment?.creator?.type == "rep") {
+        const payment_rep = await repzo.rep.get(matched_payment.creator._id);
+        linked_payment_qoyod_refund_account_id =
+          payment_rep?.integration_meta?.qoyod_refund_account_id;
+        linked_payment_qoyod_payment_account_id =
+          payment_rep?.integration_meta?.qoyod_payment_account_id;
+      }
     }
 
     const qoyod_client = await repzo.client.get(repzo_refund.client_id);
@@ -54,9 +77,13 @@ export const create_refund = async (event: EVENT, options: Config) => {
         contact_id: qoyod_client.integration_meta?.qoyod_id,
         reference: repzo_refund.serial_number.formatted,
         kind: "paid",
-        account_id: qoyod_refund_account_id
-          ? qoyod_refund_account_id
-          : options.data.paymentAccountId,
+        account_id:
+          qoyod_refund_account_id ||
+          qoyod_payment_account_id ||
+          linked_payment_qoyod_refund_account_id ||
+          linked_payment_qoyod_payment_account_id ||
+          options?.data?.refundAccountId ||
+          options?.data?.paymentAccountId,
         amount: repzo_refund.amount / 1000,
         // description: "Testing api",
         date: repzo_refund.paytime,
