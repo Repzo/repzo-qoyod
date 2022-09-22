@@ -66,6 +66,7 @@ export const create_client = async (event: EVENT, options: Config) => {
 
     await actionLog
       .addDetail(`Qoyod Responded with `, result)
+      .addDetail(`Repzo Qoyod: Client - ${qoyod_client_body?.contact?.name}`)
       .setStatus("success")
       .setBody(body)
       .commit();

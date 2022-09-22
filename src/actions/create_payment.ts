@@ -117,6 +117,13 @@ export const create_payment = async (event: EVENT, options: Config) => {
 
     await actionLog
       .addDetail(`Qoyod Responded with `, result)
+      .addDetail(
+        `Repzo Qoyod:${
+          repzo_payment?.LinkedTxn?.Txn_serial_number?.formatted
+            ? "Payment"
+            : "Receipt"
+        } - ${body?.serial_number?.formatted}`
+      )
       .setStatus("success")
       .setBody(body)
       .setMeta(qoyod_payment_account_id)

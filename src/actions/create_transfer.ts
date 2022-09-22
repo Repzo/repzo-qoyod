@@ -125,6 +125,9 @@ export const create_transfer = async (event: EVENT, options: Config) => {
     // console.log(result);
     await actionLog
       .addDetail(`Qoyod Responded with `, result)
+      .addDetail(
+        `Repzo Qoyod: Transfer - ${qoyod_transfer_body?.inventory_transfer?.reference}`
+      )
       .setStatus(result)
       .setBody(body)
       .commit();

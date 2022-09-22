@@ -156,6 +156,9 @@ export const create_invoice = async (event: EVENT, options: Config) => {
 
     await actionLog
       .addDetail(`Qoyod Responded with `, result)
+      .addDetail(
+        `Repzo Qoyod: Invoice - ${qoyod_invoice_body?.invoice?.reference}`
+      )
       .setStatus("success")
       .setBody(body)
       .commit();
