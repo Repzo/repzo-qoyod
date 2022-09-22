@@ -154,6 +154,9 @@ export const create_creditNote = async (event: EVENT, options: Config) => {
 
     await actionLog
       .addDetail(`Qoyod Responded with `, result)
+      .addDetail(
+        `Repzo Qoyod: Credit Note - ${qoyod_creditNote_body?.credit_note?.reference}`
+      )
       .setStatus("success")
       .setBody(body)
       .commit();

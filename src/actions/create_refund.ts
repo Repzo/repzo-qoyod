@@ -117,6 +117,9 @@ export const create_refund = async (event: EVENT, options: Config) => {
 
     await actionLog
       .addDetail(`Qoyod Responded with `, result)
+      .addDetail(
+        `Repzo Qoyod: Refund - ${qoyod_refund_body?.receipt?.reference}`
+      )
       .setStatus("success")
       .setBody(body)
       .commit();
