@@ -33,6 +33,7 @@
 - fix bug, get data from repzo with query per_page = 50000 @maramalshen
 - [adjust_inventory.ts] fix bug: get measureunit from the variant.product.sv_measureUnit @maramalshen
 - [create_payment] fix bug in getting qoyod_payment_account_id @maramalshen
+- [commands/basic] fix bug in body: should be object instead of string & inject full logs @maramalshen
 
 ### Removed
 
