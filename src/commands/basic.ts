@@ -40,15 +40,17 @@ export const basic = async (commandEvent: CommandEvent) => {
         .addDetail(`Start Syncing: ${commandDes?.name || command}`)
         .commit();
       await commands(event);
+      await commandLog.load(commandEvent.sync_id);
     }
 
     await commandLog
       .setStatus("success")
-      .setBody("Complete Basic Sync")
+      .setBody({ message: "Basic Sync: Completed" })
       .commit();
   } catch (e: any) {
     //@ts-ignore
     console.error(e?.response?.data || e);
+    await commandLog.load(commandEvent.sync_id);
     await commandLog.setStatus("fail", e).commit();
     throw e;
   }
