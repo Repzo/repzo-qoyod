@@ -42,6 +42,6 @@ export declare const addProducts: (
 export declare const get_qoyod_products: (
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string | undefined
+  query?: string
 ) => Promise<QoyodProducts>;
 export {};
