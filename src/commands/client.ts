@@ -94,9 +94,8 @@ export const addClients = async (commandEvent: CommandEvent) => {
     ); // ??
 
     const repzo_clients = await repzo.client.find({
-      "integration_meta.id": client_meta,
       per_page: 50000,
-      // project:["_id", "name", "integration_meta", "disabled", "email", "phone", "tax_number"]
+      project: ["_id", "integration_meta"],
     });
     result.repzo_total = repzo_clients?.data?.length;
     await commandLog
@@ -143,8 +142,9 @@ export const addClients = async (commandEvent: CommandEvent) => {
           result.failed++;
         }
       } else {
+        const repzo_origin_doc = await repzo.client.get(repzo_client._id);
         const found_identical_docs = db.search(
-          from_repzo_to_qoyod(repzo_client)
+          from_repzo_to_qoyod(repzo_origin_doc)
         );
         if (found_identical_docs.length) continue;
         // Update
