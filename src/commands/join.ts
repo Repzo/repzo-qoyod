@@ -24,6 +24,7 @@ export const join = async (commandEvent: CommandEvent) => {
         // invoice
         // {
         //   app: "repzo-qoyod",
+        //   app_id: commandEvent?.app?._id,
         //   action: "create_invoice",
         //   event: "invoice.create",
         //   join:
@@ -31,6 +32,7 @@ export const join = async (commandEvent: CommandEvent) => {
         // },
         {
           app: "repzo-qoyod",
+          app_id: commandEvent?.app?._id,
           action: "create_invoice",
           event: "invoiceItems.create",
           join:
@@ -38,6 +40,7 @@ export const join = async (commandEvent: CommandEvent) => {
         },
         {
           app: "repzo-qoyod",
+          app_id: commandEvent?.app?._id,
           action: "create_creditNote",
           event: "returnItems.create",
           join:
@@ -47,6 +50,7 @@ export const join = async (commandEvent: CommandEvent) => {
         // payment
         {
           app: "repzo-qoyod",
+          app_id: commandEvent?.app?._id,
           action: "create_payment",
           event: "payment.create",
           join:
@@ -55,12 +59,14 @@ export const join = async (commandEvent: CommandEvent) => {
         // proforma
         // {
         //   app: "repzo-qoyod",
+        //   app_id: commandEvent?.app?._id,
         //   action: "create_proforma",
         //   event: "salesorder.approve",
         //   join: false,
         // },
         // {
         //   app: "repzo-qoyod",
+        //   app_id: commandEvent?.app?._id,
         //   action: "create_proforma",
         //   event: "salesorder.create",
         //   join: false,
@@ -68,12 +74,14 @@ export const join = async (commandEvent: CommandEvent) => {
         // transfer
         // {
         //   app: "repzo-qoyod",
+        //   app_id: commandEvent?.app?._id,
         //   action: "create_transfer",
         //   event: "transfer.approve",
         //   join: false,
         // },
         {
           app: "repzo-qoyod",
+          app_id: commandEvent?.app?._id,
           action: "create_transfer",
           event: "transfer.create",
           join:
@@ -82,6 +90,7 @@ export const join = async (commandEvent: CommandEvent) => {
         // refund
         {
           app: "repzo-qoyod",
+          app_id: commandEvent?.app?._id,
           action: "create_refund",
           event: "refund.create",
           join: commandEvent?.app?.formData?.refunds?.createRefundHook || false,
@@ -89,6 +98,7 @@ export const join = async (commandEvent: CommandEvent) => {
         // client
         {
           app: "repzo-qoyod",
+          app_id: commandEvent?.app?._id,
           action: "create_client",
           event: "client.create",
           join: commandEvent?.app?.formData?.client?.clientHook || false,

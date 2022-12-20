@@ -13,6 +13,6 @@ export declare const sync_measureunits: (
 export declare const get_qoyod_units: (
   serviceEndPoint: string,
   serviceApiKey: string,
-  query?: string
+  query?: string | undefined
 ) => Promise<QoyodUnits>;
 export {};

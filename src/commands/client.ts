@@ -81,7 +81,6 @@ export const addClients = async (commandEvent: CommandEvent) => {
     db.createIndex({
       id: true,
       name: true,
-      organization: true,
       email: true,
       phone_number: true,
       tax_number: true,
@@ -155,7 +154,7 @@ export const addClients = async (commandEvent: CommandEvent) => {
           );
           result.updated++;
         } catch (e: any) {
-          console.log("Update Client Failed >> ", e, body);
+          console.log("Update Client Failed >> ", e?.response?.data || e, body);
           failed_docs_report.push({
             method: "update",
             doc_id: repzo_client?._id,
@@ -326,7 +325,6 @@ const from_repzo_to_qoyod = (repzo_client: any): QoyodClient => {
     return {
       id: repzo_client.integration_meta?.qoyod_id,
       name: repzo_client.name,
-      organization: "", // ????
       email: repzo_client.email,
       phone_number: repzo_client.phone,
       tax_number: repzo_client.tax_number,
