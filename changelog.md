@@ -34,6 +34,7 @@
 - [adjust_inventory.ts] fix bug: get measureunit from the variant.product.sv_measureUnit @maramalshen
 - [create_payment] fix bug in getting qoyod_payment_account_id @maramalshen
 - [commands/basic] fix bug in body: should be object instead of string & inject full logs @maramalshen
+- [join] if repzo.joinActionsWebHook.status = failure then commandLog.setStatus should be fail @maramalshen
 
 ### Removed
 
