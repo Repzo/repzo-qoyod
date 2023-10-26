@@ -4,6 +4,7 @@
 
 ### Added
 
+- [actions/create_client] update repzo_client_integration_meta with qoyod_client_id @maramalshen
 - [./src/commands/tax] new Command: Tax @maramalshen
 - [./src/commands/product] implement tax key in the product @maramalshen
 - [./src/commands/measureunit_family.ts] new Command: Measure Unit Family @maramalshen
