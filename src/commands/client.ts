@@ -18,7 +18,7 @@ import {
 } from "../util.js";
 // var config = ;
 
-interface QoyodClient {
+export interface QoyodClient {
   id: number;
   name: string;
   organization?: string;
@@ -26,6 +26,8 @@ interface QoyodClient {
   phone_number?: string;
   tax_number?: string;
   status: "Active" | "Inactive";
+  created_at?: string; // "2023-10-26T10:42:52.000+03:00",
+  updated_at?: string; // "2023-10-26T10:42:52.000+03:00",
 }
 
 interface QoyodClients {

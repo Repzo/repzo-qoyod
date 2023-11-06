@@ -4,6 +4,7 @@
 
 ### Added
 
+- [actions/create_client] update repzo_client_integration_meta with qoyod_client_id @maramalshen
 - [./src/commands/tax] new Command: Tax @maramalshen
 - [./src/commands/product] implement tax key in the product @maramalshen
 - [./src/commands/measureunit_family.ts] new Command: Measure Unit Family @maramalshen
@@ -34,6 +35,7 @@
 - [adjust_inventory.ts] fix bug: get measureunit from the variant.product.sv_measureUnit @maramalshen
 - [create_payment] fix bug in getting qoyod_payment_account_id @maramalshen
 - [commands/basic] fix bug in body: should be object instead of string & inject full logs @maramalshen
+- [join] if repzo.joinActionsWebHook.status = failure then commandLog.setStatus should be fail @maramalshen
 
 ### Removed
 
