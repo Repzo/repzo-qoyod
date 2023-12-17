@@ -14,5 +14,13 @@ export declare const Commands: (
       disabled: number;
       failed: number;
     }
+  | {
+      total_reps_with_accounts_ids: number;
+      repzo_reps: number;
+      unset: number;
+      created: number;
+      updated: number;
+      failed: number;
+    }
 >;
 export declare const CommandsList: import("./types.js").Command[];

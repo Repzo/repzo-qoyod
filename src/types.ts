@@ -83,4 +83,5 @@ export type FailedDocsReport = {
   doc_id?: string;
   doc?: any;
   error_message: any;
+  [key: string]: any;
 }[];

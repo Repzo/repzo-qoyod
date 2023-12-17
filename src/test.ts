@@ -284,6 +284,7 @@ let commandEvent: CommandEvent | any = {
       repzoApiKey: "DGgdM0ZGLzR8UH25Lu3okxAs-AzArDH6VN0zcsY0Qek",
       paymentAccountId: 17,
       errorEmail: "mohammad.khamis@repzoapp.com",
+      username_payment_account_id: [],
     },
     company_namespace: ["intgqoyod"],
     createdAt: "2022-05-17T12:39:12.338Z",
@@ -309,12 +310,13 @@ let commandEvent: CommandEvent | any = {
   // command: "sync_measureunit_family",
   // command: "add_product",
   // command: "adjust_inventory",
+  // command: "sync_username_account_id",
 
   end_of_day: "04:00",
   nameSpace: ["intgqoyod"], // demosv
   timezone: "Asia/Amman",
   meta: "",
-  sync_id: "502af0ee-22e1-43d1-aa85-4bcc879ecb16",
+  sync_id: "e1be40f5-d8d0-42e0-81c0-e4880e77c417",
   env: "staging", // ""staging|production|local""
 };
 

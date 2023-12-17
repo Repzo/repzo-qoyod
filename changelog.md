@@ -24,6 +24,7 @@
 - Update Error Logs in Actions & Commands @maramalshen
 - Inject Body of the action in the details.meta @maramalshen
 - [actions/create_refund] refund.account_id = rep.integration_meta.qoyod_refund_account_id || options.data.refundAccountId @maramalshen
+- [command/username_account_id] new command: sync_username_account_id @maramalshen
 
 ### Changed
 

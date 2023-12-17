@@ -10,6 +10,8 @@ import { sync_measureunit_family } from "./measureunit_family.js";
 import { join } from "./join.js";
 import { basic } from "./basic.js";
 import { EVENT } from "./../types";
+import { sync_username_account_id } from "./username_account_id.js";
+
 export const commands = async (CommandEvent: CommandEvent) => {
   switch (CommandEvent.command) {
     case "add_client":
@@ -34,6 +36,8 @@ export const commands = async (CommandEvent: CommandEvent) => {
       return await join(CommandEvent);
     case "basic":
       return await basic(CommandEvent);
+    case "sync_username_account_id":
+      return await sync_username_account_id(CommandEvent);
     default:
       throw `Route: ${CommandEvent.command} not found`;
   }
@@ -48,6 +52,11 @@ export const commandsList: Command[] = [
   {
     command: "join",
     name: "Join",
+    description: "",
+  },
+  {
+    command: "sync_username_account_id",
+    name: "Sync Username Payment/Refund Account Id",
     description: "",
   },
   {
