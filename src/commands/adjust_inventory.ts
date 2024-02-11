@@ -165,8 +165,13 @@ export const adjust_inventory = async (commandEvent: CommandEvent) => {
       }
 
       const qoyod_warehouse_id = repzo_warehouse.integration_meta?.qoyod_id;
+      const repzo_variant = repzo_variants?.data?.find(
+        (variant) => variant._id.toString() == repzo_variant_id.toString()
+      );
 
-      const master_key = `${qoyod_warehouse_id}_${repzo_variant_id}`;
+      const master_key = `${qoyod_warehouse_id}_${
+        repzo_variant?.integration_meta?.qoyod_id || repzo_variant_id
+      }`;
 
       if (master_warehouse_product[master_key]) {
         master_warehouse_product[master_key].repzo_qty = repzo_qty;
