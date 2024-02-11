@@ -37,6 +37,7 @@
 - [create_payment] fix bug in getting qoyod_payment_account_id @maramalshen
 - [commands/basic] fix bug in body: should be object instead of string & inject full logs @maramalshen
 - [join] if repzo.joinActionsWebHook.status = failure then commandLog.setStatus should be fail @maramalshen
+- [adjust-inventory] fix bug in duplicated variants @maramalshen
 
 ### Removed
 
