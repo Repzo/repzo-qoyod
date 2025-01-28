@@ -111,7 +111,7 @@ export const create_creditNote = async (event: EVENT, options: Config) => {
         quantity: Math.abs(repzo_item.qty),
         unit_price:
           ((repzo_item?.measureunit?.factor || 1) *
-            repzo_item.discounted_price) /
+            repzo_item.return_price_float) /
           1000,
         unit_type: repzo_measureunit?.integration_meta?.qoyod_id,
         // discount: repzo_item.discount_value,
