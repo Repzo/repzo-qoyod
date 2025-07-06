@@ -238,14 +238,30 @@ export const updatedInactiveClients = async (commandEvent: CommandEvent) => {
       )
       .commit();
 
-    const client_meta = qoyod_clients?.customers.map(
-      (client: QoyodClient) => `${nameSpace}_${client.id}`
-    ); // ??
+    // Build repzo_clients array in batches to avoid 414 Request-URI Too Large error
+    const pageSize = 100;
+    const repzo_clients_data: any[] = [];
+    
+    for (let page = 0; page < Math.ceil(qoyod_clients.customers.length / pageSize); page++) {
+      const start = page * pageSize;
+      const end = Math.min(start + pageSize, qoyod_clients.customers.length);
+      const batch_clients = qoyod_clients.customers.slice(start, end);
+      
+      const client_meta_batch = batch_clients.map(
+        (client: QoyodClient) => `${nameSpace}_${client.id}`
+      );
 
-    const repzo_clients = await repzo.client.find({
-      "integration_meta.id": client_meta,
-      per_page: 50000,
-    });
+      const repzo_clients_batch = await repzo.client.find({
+        "integration_meta.id": client_meta_batch,
+        per_page: 50000,
+      });
+      
+      if (repzo_clients_batch?.data) {
+        repzo_clients_data.push(...repzo_clients_batch.data);
+      }
+    }
+    
+    const repzo_clients = { data: repzo_clients_data };
     result.repzo_total = repzo_clients?.data?.length;
     await commandLog
       .addDetail(
