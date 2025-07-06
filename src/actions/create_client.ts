@@ -12,6 +12,7 @@ interface QoyodClient {
     email?: string;
     phone_number?: string;
     status?: "Active" | "Inactive";
+    tax_number?: string;
   };
 }
 
@@ -29,6 +30,18 @@ export const create_client = async (event: EVENT, options: Config) => {
       if (body) body = JSON.parse(body);
     } catch (e) {}
 
+    if (body.integration_meta?.qoyod_id || body.integration_meta?.id) {
+      // Already created
+      await actionLog
+        .addDetail(
+          `Client ${body?.name} already exists in Qoyod with _id: ${
+            body?.integration_meta?.qoyod_id || body?.integration_meta?.id
+          }`
+        )
+        .setStatus("success", null)
+        .commit();
+    }
+
     await actionLog
       .addDetail(
         `Repzo Qoyod: Started Create Client - ${body?.serial_number?.formatted}`
@@ -44,6 +57,7 @@ export const create_client = async (event: EVENT, options: Config) => {
         email: repzo_client.email,
         phone_number: repzo_client.phone,
         status: repzo_client.disabled ? "Inactive" : "Active",
+        tax_number: repzo_client.tax_number,
       },
     };
 

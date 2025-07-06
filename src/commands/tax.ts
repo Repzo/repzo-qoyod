@@ -20,7 +20,7 @@ interface QoyodTax {
   id: number;
   name: string;
   percentage: number;
-  type: "inclusive" | "additive" | "N/A";
+  type: "inclusive" | "additive"; // | "N/A";
 }
 
 interface QoyodTaxes {
@@ -103,7 +103,7 @@ export const sync_taxes = async (commandEvent: CommandEvent) => {
           `${nameSpace}_${qoyod_tax.id}_${qoyod_tax.type}`
       );
 
-      const default_tax_type: "inclusive" | "additive" | "N/A" = "additive";
+      const default_tax_type: "inclusive" | "additive" = "additive"; // | "N/A"
 
       const body = {
         _id: repzo_tax?._id,
