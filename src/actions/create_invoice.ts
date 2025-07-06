@@ -73,7 +73,7 @@ export const create_invoice = async (event: EVENT, options: Config) => {
     const repzo_invoice_measureunit_ids: any = {};
 
     repzo_invoice.items.forEach((item: Service.Item.Schema) => {
-      repzo_invoice_variant_ids[item.variant.variant_id] = true;
+      repzo_invoice_variant_ids[item.variant.variant_id as string] = true;
       repzo_invoice_measureunit_ids[item.measureunit._id] = true;
     });
 
