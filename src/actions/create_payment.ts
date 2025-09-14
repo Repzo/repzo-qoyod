@@ -11,6 +11,7 @@ interface QoyodPaymentInvoice {
     account_id: string;
     date: string;
     amount: string;
+    payment_method?: "1" | "10" | "30" | "42" | "48"; // 10 => Cash, 30 => Credit, 42 => Payment to bank account, 48 => Bank Card, 1 => Not defined
   };
 }
 
@@ -65,6 +66,7 @@ interface QoyodReceipt {
     amount: number;
     description?: string;
     date: string;
+    payment_method?: "1" | "10" | "30" | "42" | "48"; // 10 => Cash, 30 => Credit, 42 => Payment to bank account, 48 => Bank Card, 1 => Not defined
   };
 }
 
@@ -202,6 +204,7 @@ const create_invoice_payment = async ({
           : options.data.paymentAccountId,
         date: repzo_payment.paytime,
         amount: String(repzo_payment.amount / 1000),
+        payment_method: repzo_payment.payment_type == "cash" ? "10" : "1",
       },
     };
     await actionLog
@@ -252,6 +255,7 @@ const create_receipt = async ({
         amount: repzo_payment.amount / 1000,
         // description: "Testing api",
         date: repzo_payment.paytime,
+        payment_method: repzo_payment.payment_type == "cash" ? "10" : "1",
       },
     };
 

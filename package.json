@@ -1,7 +1,7 @@
 {
   "name": "repzo-qoyod",
   "description": "repzo qoyod integration",
-  "version": "0.0.62",
+  "version": "0.0.63",
   "homepage": "",
   "keywords": [],
   "author": {
@@ -45,7 +45,7 @@
     "data-set-query": "0.0.12",
     "jsonwebtoken": "^8.5.1",
     "moment-timezone": "^0.5.34",
-    "repzo": "^1.0.32",
+    "repzo": "^1.0.196",
     "uuid": "^8.3.2"
   }
 }
