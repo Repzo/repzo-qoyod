@@ -23,6 +23,7 @@ interface QoyodInvoice {
     description?: string;
     issue_date: string;
     due_date: string;
+    payment_method: 1 | 10 | 30 | 42 | 48; // 1=NotDefined, 10=Cash, 30=Credit, 42=Payment to bank account, 48=Bank Card
     status: "Draft" | "Approved";
     inventory_id: number; // warehouse_id
     line_items: QoyodInvoiceItem[];
@@ -129,6 +130,7 @@ export const create_invoice = async (event: EVENT, options: Config) => {
         description: repzo_invoice.comment,
         issue_date: repzo_invoice.issue_date,
         due_date: repzo_invoice.due_date,
+        payment_method: options?.data?.invoices?.invoicePaymentMethod || 1, // 1=NotDefined, 10=Cash, 30=Credit, 42=Payment to bank account, 48=Bank Card
         status: options?.data?.invoices?.invoiceInitialStatus,
         inventory_id: repzo_invoice_warehouse.integration_meta?.qoyod_id,
         line_items: qoyod_invoice_items,

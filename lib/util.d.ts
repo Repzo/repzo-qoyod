@@ -48,7 +48,7 @@ export declare const updateAt_query: (
 ) => string;
 export declare const get_data_from_qoyod: (
   _path: string,
-  default_res: any, // if no data was found
+  default_res: any,
   serviceEndPoint: string,
   serviceApiKey: string,
   query?: string
