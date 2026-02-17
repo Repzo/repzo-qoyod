@@ -15,8 +15,8 @@ import {
   update_bench_time,
   updateAt_query,
   set_error,
+  get_data_from_qoyod,
 } from "../util.js";
-// var config = ;
 
 export interface QoyodClient {
   id: number;
@@ -328,16 +328,27 @@ const get_qoyod_clients = async (
   query?: string
 ): Promise<QoyodClients> => {
   try {
-    const qoyod_clients: QoyodClients = await _fetch(
+    const result: QoyodClients["customers"] = await get_data_from_qoyod({
+      _path: "customers",
+      default_res: [],
       serviceEndPoint,
-      `/customers${query ? query : ""}`,
-      { "API-KEY": serviceApiKey }
-    );
-    if (!qoyod_clients.hasOwnProperty("customers"))
-      qoyod_clients.customers = [];
-    return qoyod_clients;
+      serviceApiKey,
+      query,
+      entityName: "customers",
+    });
+
+    return { customers: result || [] };
+
+    // const qoyod_clients: QoyodClients = await _fetch(
+    //   serviceEndPoint,
+    //   `/customers${query ? query : ""}`,
+    //   { "API-KEY": serviceApiKey },
+    // );
+    // if (!qoyod_clients.hasOwnProperty("customers"))
+    //   qoyod_clients.customers = [];
+    // return qoyod_clients;
   } catch (e: any) {
-    if (e.response.status == 404) return { customers: [] };
+    if (e.response?.status == 404) return { customers: [] };
     throw e;
   }
 };

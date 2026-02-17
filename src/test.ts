@@ -1,7 +1,7 @@
 import { CommandEvent, Result } from "./types";
 let commandEvent: CommandEvent | any = {
   app: {
-    _id: "628397700cf4f813aa63b52c",
+    _id: "68f770e535420321dd3a47e6",
     name: "Qoyod",
     disabled: false,
     available_app: {
@@ -18,22 +18,13 @@ let commandEvent: CommandEvent | any = {
           "refundAccountId",
         ],
         properties: {
-          serviceApiKey: {
-            type: "string",
-            title: "Qoyoud API KEY",
-          },
-          repzoApiKey: {
-            type: "string",
-            title: "Repzo API KEY",
-          },
+          serviceApiKey: { type: "string", title: "Qoyoud API KEY" },
+          repzoApiKey: { type: "string", title: "Repzo API KEY" },
           paymentAccountId: {
             type: "number",
             title: "Qoyod Payment Account Id",
           },
-          refundAccountId: {
-            type: "number",
-            title: "Qoyod Refund Account Id",
-          },
+          refundAccountId: { type: "number", title: "Qoyod Refund Account Id" },
           errorEmail: {
             type: "string",
             format: "email",
@@ -76,6 +67,18 @@ let commandEvent: CommandEvent | any = {
                 default: "Draft",
                 enum: ["Draft", "Approved"],
               },
+              invoiceDefaultPaymentMethod: {
+                type: "number",
+                title: "Invoice Default Payment Method",
+                default: 10,
+                oneOf: [
+                  { const: 10, title: "Cash" },
+                  { const: 30, title: "Credit" },
+                  { const: 42, title: "Payment to bank account" },
+                  { const: 48, title: "Bank Card" },
+                  { const: 1, title: "Not defined" },
+                ],
+              },
             },
           },
           payments: {
@@ -111,6 +114,25 @@ let commandEvent: CommandEvent | any = {
                 type: "boolean",
                 title: "Live Sync Transfers from Repzo to Qoyoud",
                 default: false,
+              },
+            },
+          },
+          username_payment_account_id: {
+            title: "Username / Payment Account _id",
+            type: "array",
+            items: {
+              type: "object",
+              required: ["username", "payment_account_id"],
+              properties: {
+                username: { type: "string", title: "Rep username" },
+                payment_account_id: {
+                  type: "number",
+                  title: "Payment Account _id",
+                },
+                refund_account_id: {
+                  type: "number",
+                  title: "Refund Account _id",
+                },
               },
             },
           },
@@ -160,25 +182,19 @@ let commandEvent: CommandEvent | any = {
       },
       app_settings: {
         repo: "",
-        serviceEndPoint: "https://www.qoyod.com/api/2.0",
+        _id: "6249fbdbe907f6a0d68a7059",
+        serviceEndPoint: "https://api.qoyod.com/2.0",
         meta: {},
       },
       commands: [
+        { command: "basic", name: "Basic", description: "" },
+        { command: "join", name: "Join", description: "" },
         {
-          command: "basic",
-          name: "Basic",
+          command: "sync_username_account_id",
+          name: "Sync Username Payment/Refund Account Id",
           description: "",
         },
-        {
-          command: "join",
-          name: "Join",
-          description: "",
-        },
-        {
-          command: "add_client",
-          name: "Sync Clients",
-          description: "",
-        },
+        { command: "add_client", name: "Sync Clients", description: "" },
         {
           command: "update_disable_client",
           name: "Sync Disabled Cleints",
@@ -189,11 +205,7 @@ let commandEvent: CommandEvent | any = {
           name: "Sync Product Category",
           description: "",
         },
-        {
-          command: "sync_tax",
-          name: "Sync Taxes",
-          description: "",
-        },
+        { command: "sync_tax", name: "Sync Taxes", description: "" },
         {
           command: "sync_measureunit",
           name: "Sync Measure Units",
@@ -204,16 +216,8 @@ let commandEvent: CommandEvent | any = {
           name: "Sync Measure Unit Families",
           description: "",
         },
-        {
-          command: "add_product",
-          name: "Sync Products",
-          description: "",
-        },
-        {
-          command: "sync_inventory",
-          name: "Sync Inventory",
-          description: "",
-        },
+        { command: "add_product", name: "Sync Products", description: "" },
+        { command: "sync_inventory", name: "Sync Inventory", description: "" },
         {
           command: "adjust_inventory",
           name: "Adjust Inevntory",
@@ -222,7 +226,7 @@ let commandEvent: CommandEvent | any = {
       ],
       app_category: "6249fa8466312f76e595634a",
       createdAt: "2022-04-03T19:56:11.345Z",
-      updatedAt: "2022-04-03T21:02:39.881Z",
+      updatedAt: "2023-12-12T12:00:06.495Z",
       __v: 0,
       actions: [
         {
@@ -260,52 +264,38 @@ let commandEvent: CommandEvent | any = {
         "The Easiest Cloud Accounting Software for Your Business.Qoyod offers professional invoices, inventory controls and more ...",
       logo: "https://repzo-media-service.s3.eu-west-2.amazonaws.com/demosv/image/2022/6/5/qoyod.png",
       title: "Qoyod",
+      subscription_billing_mode: "free",
     },
+    company_namespace: ["demosv"],
     formData: {
-      client: {
-        clientHook: true,
-      },
-      invoices: {
-        createInvoiceHook: true,
-        createCreditNoteHook: true,
-        invoiceInitialStatus: "Approved",
-      },
-      payments: {
-        createPaymentHook: true,
-      },
-      refunds: {
-        createRefundHook: true,
-      },
-      transfer: {
-        createTransferHook: false,
-      },
-      bench_time_client: "2022-05-18T09:16:00.000Z",
       serviceApiKey: "7397dcfd9a2446277c367acd7",
-      repzoApiKey: "DGgdM0ZGLzR8UH25Lu3okxAs-AzArDH6VN0zcsY0Qek",
-      paymentAccountId: 17,
-      errorEmail: "mohammad.khamis@repzoapp.com",
+      repzoApiKey: "gJqC0br8neetx2VHICLKm3OeTdLMSbXB1Nn6xjvY0_w",
+      paymentAccountId: 11,
+      refundAccountId: 11,
+      client: { clientHook: false },
+      invoices: {
+        createInvoiceHook: false,
+        createCreditNoteHook: false,
+        invoiceInitialStatus: "Draft",
+        invoiceDefaultPaymentMethod: 10,
+      },
+      payments: { createPaymentHook: false },
+      refunds: { createRefundHook: false },
+      transfer: { createTransferHook: false },
       username_payment_account_id: [],
     },
-    company_namespace: ["intgqoyod"],
-    createdAt: "2022-05-17T12:39:12.338Z",
-    updatedAt: "2022-10-02T09:16:48.901Z",
+    options_formData: {},
+    createdAt: "2025-10-21T11:39:17.074Z",
+    updatedAt: "2026-02-17T07:50:50.392Z",
     __v: 0,
-    options_formData: {
-      bench_time_category: "2022-10-02T09:16:42.367Z",
-      bench_time_tax: "2022-10-02T09:16:43.604Z",
-      bench_time_measureunit: "2022-10-02T09:16:44.826Z",
-      bench_time_product: "2022-10-02T09:16:46.921Z",
-      bench_time_inventory: "2022-10-02T09:16:48.191Z",
-      bench_time_disabled_client: "2022-10-02T09:16:41.259Z",
-      bench_time_client: "2022-10-02T09:16:38.911Z",
-    },
   },
 
-  command: "basic",
+  // command: "basic",
+  // command: "add_client",
   // command: "update_disable_client",
   // command: "sync_inventory",
   // command: "sync_tax",
-  // command: "sync_category",
+  command: "sync_category",
   // command: "sync_measureunit",
   // command: "sync_measureunit_family",
   // command: "add_product",
@@ -313,10 +303,10 @@ let commandEvent: CommandEvent | any = {
   // command: "sync_username_account_id",
 
   end_of_day: "04:00",
-  nameSpace: ["intgqoyod"], // demosv
+  nameSpace: ["demosv"], // demosv
   timezone: "Asia/Amman",
   meta: "",
-  sync_id: "e1be40f5-d8d0-42e0-81c0-e4880e77c417",
+  sync_id: "55fe84e9-cf3c-4e52-8da1-69c2b2959a47",
   env: "staging", // ""staging|production|local""
 };
 

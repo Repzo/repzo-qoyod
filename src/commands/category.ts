@@ -15,6 +15,7 @@ import {
   update_bench_time,
   updateAt_query,
   set_error,
+  get_data_from_qoyod,
 } from "../util.js";
 
 interface QoyodCategory {
@@ -188,16 +189,26 @@ const get_qoyod_categories = async (
   query?: string
 ): Promise<QoyodCategories> => {
   try {
-    const qoyod_categories: QoyodCategories = await _fetch(
+    const result: QoyodCategories["categories"] = await get_data_from_qoyod({
+      _path: "categories",
+      default_res: { categories: [] },
       serviceEndPoint,
-      `/categories${query ? query : ""}`,
-      { "API-KEY": serviceApiKey }
-    );
-    if (!qoyod_categories.hasOwnProperty("categories"))
-      qoyod_categories.categories = [];
-    return qoyod_categories;
+      serviceApiKey,
+      query,
+      entityName: "categories",
+    });
+    return { categories: result };
+
+    // const qoyod_categories: QoyodCategories = await _fetch(
+    //   serviceEndPoint,
+    //   `/categories${query ? query : ""}`,
+    //   { "API-KEY": serviceApiKey },
+    // );
+    // if (!qoyod_categories.hasOwnProperty("categories"))
+    //   qoyod_categories.categories = [];
+    // return qoyod_categories;
   } catch (e: any) {
-    if (e.response.status == 404) return { categories: [] };
+    if (e.response?.status == 404) return { categories: [] };
     throw e;
   }
 };

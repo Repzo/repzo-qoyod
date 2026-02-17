@@ -15,6 +15,7 @@ import {
   update_bench_time,
   updateAt_query,
   set_error,
+  get_data_from_qoyod,
 } from "../util.js";
 // var config = ;
 
@@ -213,16 +214,25 @@ const get_qoyod_inventories = async (
   query?: string
 ): Promise<QoyodInventories> => {
   try {
-    const qoyod_inventories: QoyodInventories = await _fetch(
+    const result: QoyodInventories["inventories"] = await get_data_from_qoyod({
+      _path: "inventories",
+      default_res: [],
       serviceEndPoint,
-      `/inventories${query ? query : ""}`,
-      { "API-KEY": serviceApiKey }
-    );
-    if (!qoyod_inventories.hasOwnProperty("inventories"))
-      qoyod_inventories.inventories = [];
-    return qoyod_inventories;
+      serviceApiKey,
+      query,
+      entityName: "inventories",
+    });
+    return { inventories: result };
+    // const qoyod_inventories: QoyodInventories = await _fetch(
+    //   serviceEndPoint,
+    //   `/inventories${query ? query : ""}`,
+    //   { "API-KEY": serviceApiKey }
+    // );
+    // if (!qoyod_inventories.hasOwnProperty("inventories"))
+    //   qoyod_inventories.inventories = [];
+    // return qoyod_inventories;
   } catch (e: any) {
-    if (e.response.status == 404) return { inventories: [] };
+    if (e.response?.status == 404) return { inventories: [] };
     throw e;
   }
 };

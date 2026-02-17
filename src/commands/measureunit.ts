@@ -15,6 +15,7 @@ import {
   update_bench_time,
   updateAt_query,
   set_error,
+  get_data_from_qoyod,
 } from "../util.js";
 
 interface QoyodUnit {
@@ -200,16 +201,27 @@ export const get_qoyod_units = async (
   query?: string
 ): Promise<QoyodUnits> => {
   try {
-    const qoyod_units: QoyodUnits = await _fetch(
+    const result: QoyodUnits["product_unit_types"] = await get_data_from_qoyod({
+      _path: "product_unit_types",
+      default_res: [],
       serviceEndPoint,
-      `/product_unit_types${query ? query : ""}`,
-      { "API-KEY": serviceApiKey }
-    );
-    if (!qoyod_units.hasOwnProperty("product_unit_types"))
-      qoyod_units.product_unit_types = [];
-    return qoyod_units;
+      serviceApiKey,
+      entityName: "product_unit_types",
+      query,
+    });
+
+    return { product_unit_types: result };
+
+    // const qoyod_units: QoyodUnits = await _fetch(
+    //   serviceEndPoint,
+    //   `/product_unit_types${query ? query : ""}`,
+    //   { "API-KEY": serviceApiKey }
+    // );
+    // if (!qoyod_units.hasOwnProperty("product_unit_types"))
+    //   qoyod_units.product_unit_types = [];
+    // return qoyod_units;
   } catch (e: any) {
-    if (e.response.status == 404) return { product_unit_types: [] };
+    if (e.response?.status == 404) return { product_unit_types: [] };
     throw e;
   }
 };
