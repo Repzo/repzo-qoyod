@@ -15,6 +15,7 @@ import {
   update_bench_time,
   updateAt_query,
   set_error,
+  get_data_from_qoyod,
 } from "../util.js";
 
 interface QoyodProduct {
@@ -408,16 +409,27 @@ export const get_qoyod_products = async (
   query?: string
 ): Promise<QoyodProducts> => {
   try {
-    const qoyod_products: QoyodProducts = await _fetch(
+    const result: QoyodProducts["products"] = await get_data_from_qoyod({
+      _path: "products",
+      default_res: [],
       serviceEndPoint,
-      `/products${query ? query : ""}`,
-      { "API-KEY": serviceApiKey }
-    );
-    if (!qoyod_products.hasOwnProperty("products"))
-      qoyod_products.products = [];
-    return qoyod_products;
+      serviceApiKey,
+      query,
+      entityName: "products",
+    });
+
+    return { products: result || [] };
+
+    // const qoyod_products: QoyodProducts = await _fetch(
+    //   serviceEndPoint,
+    //   `/products${query ? query : ""}`,
+    //   { "API-KEY": serviceApiKey }
+    // );
+    // if (!qoyod_products.hasOwnProperty("products"))
+    //   qoyod_products.products = [];
+    // return qoyod_products;
   } catch (e: any) {
-    if (e.response.status == 404) return { products: [] };
+    if (e.response?.status == 404) return { products: [] };
     throw e;
   }
 };

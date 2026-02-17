@@ -1,6 +1,9 @@
 import axios from "axios";
 import Repzo from "repzo";
 
+const DEFAULT_PER_PAGE = 200;
+const DEFAULT_TOTAL_PAGES = 1000;
+
 interface Params {
   [key: string]: any;
 }
@@ -115,22 +118,76 @@ export const updateAt_query = (
   }
 };
 
-export const get_data_from_qoyod = async (
-  _path: string,
-  default_res: any, // if no data was found
-  serviceEndPoint: string,
-  serviceApiKey: string,
-  query?: string
-): Promise<any> => {
+export const get_data_from_qoyod = async ({
+  _path,
+  default_res,
+  serviceEndPoint,
+  serviceApiKey,
+  query,
+  entityName,
+}: {
+  _path: string;
+  default_res: any; // if no data was found
+  serviceEndPoint: string;
+  serviceApiKey: string;
+  query?: string;
+  entityName: string;
+}): Promise<{ [key: string]: any }[] | any> => {
   try {
-    const result: any = await _fetch(
-      serviceEndPoint,
-      `/${_path}${query ? query : ""}`,
-      { "API-KEY": serviceApiKey }
-    );
-    return result;
+    const all_data: { [key: string]: any }[] = [];
+    let total_pages = DEFAULT_TOTAL_PAGES;
+    let check_getting_same_page_data_each_loop = true;
+    let page = 1;
+    for (page; page <= total_pages; page++) {
+      try {
+        const result = await _fetch(
+          serviceEndPoint,
+          `/${_path}${query ? query : ""}${
+            query ? "&" : "?"
+          }page=${page}&per_page=${DEFAULT_PER_PAGE}`,
+          { "API-KEY": serviceApiKey }
+        );
+        if (result?.pagination?.totalPages) {
+          total_pages = result.pagination.totalPages;
+        }
+        if (result && result[entityName] && result[entityName].length > 0) {
+          if (page > 1 && check_getting_same_page_data_each_loop) {
+            const first_doc_in_page_2 = result[entityName][0];
+            const has_matching_doc_in_page_1 = all_data.some(
+              (item) => item.id === first_doc_in_page_2.id
+            );
+            if (has_matching_doc_in_page_1) {
+              console.warn(
+                `Warning: Getting same data in page ${page} as in page 1, this might indicate an issue with pagination in Qoyod's API, or that the data is not changing. Stopping further requests to avoid infinite loop.`
+              );
+              break;
+            } else {
+              check_getting_same_page_data_each_loop = false; // if the data in page 2 is different than page 1, then we can continue as normal
+            }
+          }
+          result[entityName].forEach((item: any) => {
+            all_data.push(item);
+          });
+          if (
+            result[entityName].length < DEFAULT_PER_PAGE ||
+            result[entityName].length > DEFAULT_PER_PAGE
+          ) {
+            break; // No more data to fetch
+          }
+        } else {
+          break; // No more data to fetch
+        }
+      } catch (e: any) {
+        console.error(e);
+        if (e.response?.status == 404) break; // No more data to fetch
+        throw e;
+      }
+    }
+    console.log({ total_pages, page, fetched_records: all_data.length });
+    console.log(JSON.stringify(all_data));
+    return all_data.length > 0 ? all_data : default_res;
   } catch (e: any) {
-    if (e.response.status == 404) return default_res;
+    if (e.response?.status == 404) return default_res;
     throw e;
   }
 };

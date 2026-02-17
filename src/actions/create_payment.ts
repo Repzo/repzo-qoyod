@@ -1,6 +1,12 @@
 import Repzo from "repzo";
 import { EVENT, Config } from "../types";
-import { _fetch, _create, _update, _delete } from "../util.js";
+import {
+  _fetch,
+  _create,
+  _update,
+  _delete,
+  get_data_from_qoyod,
+} from "../util.js";
 import { Service } from "repzo/src/types";
 import { v4 as uuid } from "uuid";
 
@@ -145,16 +151,25 @@ const get_qoyod_invoices = async (
   query?: string
 ): Promise<QoyodInvoices> => {
   try {
-    const qoyod_invoices: QoyodInvoices = await _fetch(
+    const result: QoyodInvoices["invoices"] = await get_data_from_qoyod({
+      _path: "invoices",
+      default_res: [],
       serviceEndPoint,
-      `/invoices${query ? query : ""}`,
-      { "API-KEY": serviceApiKey }
-    );
-    if (!qoyod_invoices.hasOwnProperty("invoices"))
-      qoyod_invoices.invoices = [];
-    return qoyod_invoices;
+      serviceApiKey,
+      query,
+      entityName: "invoices",
+    });
+    return { invoices: result };
+    // const qoyod_invoices: QoyodInvoices = await _fetch(
+    //   serviceEndPoint,
+    //   `/invoices${query ? query : ""}`,
+    //   { "API-KEY": serviceApiKey },
+    // );
+    // if (!qoyod_invoices.hasOwnProperty("invoices"))
+    //   qoyod_invoices.invoices = [];
+    // return qoyod_invoices;
   } catch (e: any) {
-    if (e.response.status == 404) return { invoices: [] };
+    if (e.response?.status == 404) return { invoices: [] };
     throw e;
   }
 };
