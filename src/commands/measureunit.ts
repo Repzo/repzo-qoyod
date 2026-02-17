@@ -202,7 +202,7 @@ export const get_qoyod_units = async (
 ): Promise<QoyodUnits> => {
   try {
     const result: QoyodUnits["product_unit_types"] = await get_data_from_qoyod({
-      _path: `product_unit_types`,
+      _path: "product_unit_types",
       default_res: [],
       serviceEndPoint,
       serviceApiKey,

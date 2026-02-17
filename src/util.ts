@@ -126,24 +126,37 @@ export const get_data_from_qoyod = async ({
   query,
   entityName,
 }: {
-  _path: string;
+  _path:
+    | "invoices"
+    | "categories"
+    | "customers"
+    | "inventories"
+    | "product_unit_types"
+    | "products";
   default_res: any; // if no data was found
   serviceEndPoint: string;
   serviceApiKey: string;
   query?: string;
-  entityName: string;
+  entityName:
+    | "invoices"
+    | "categories"
+    | "customers"
+    | "inventories"
+    | "product_unit_types"
+    | "products";
 }): Promise<{ [key: string]: any }[] | any> => {
   try {
     const all_data: { [key: string]: any }[] = [];
     let total_pages = DEFAULT_TOTAL_PAGES;
     let check_getting_same_page_data_each_loop = true;
-    let page = 1;
-    for (page; page <= total_pages; page++) {
+    for (let page = 1; page <= total_pages; page++) {
+      let QUERY = query ? query : "";
+      if (QUERY && !QUERY.startsWith("?")) QUERY = "?" + QUERY;
       try {
         const result = await _fetch(
           serviceEndPoint,
-          `/${_path}${query ? query : ""}${
-            query ? "&" : "?"
+          `/${_path}${QUERY}${
+            QUERY ? "&" : "?"
           }page=${page}&per_page=${DEFAULT_PER_PAGE}`,
           { "API-KEY": serviceApiKey }
         );
@@ -183,8 +196,6 @@ export const get_data_from_qoyod = async ({
         throw e;
       }
     }
-    console.log({ total_pages, page, fetched_records: all_data.length });
-    console.log(JSON.stringify(all_data));
     return all_data.length > 0 ? all_data : default_res;
   } catch (e: any) {
     if (e.response?.status == 404) return default_res;
