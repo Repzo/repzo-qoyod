@@ -165,13 +165,13 @@ export const get_data_from_qoyod = async ({
       let QUERY = query ? query : "";
       if (QUERY && !QUERY.startsWith("?")) QUERY = "?" + QUERY;
       try {
-        const result: QoyodApiResponse = await _fetch(
+        const result: QoyodApiResponse = (await _fetch(
           serviceEndPoint,
           `/${_path}${QUERY}${
             QUERY ? "&" : "?"
           }page=${page}&per_page=${DEFAULT_PER_PAGE}`,
           { "API-KEY": serviceApiKey }
-        );
+        )) as unknown as QoyodApiResponse;
         if (result?.pagination?.totalPages) {
           total_pages = result.pagination.totalPages;
         }

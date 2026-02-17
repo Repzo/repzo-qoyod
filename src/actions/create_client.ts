@@ -70,12 +70,12 @@ export const create_client = async (event: EVENT, options: Config) => {
       )
       .commit();
 
-    const result: { contact: QoyodClientResult } = await _create(
+    const result: { contact: QoyodClientResult } = (await _create(
       options.serviceEndPoint,
       "/customers",
       qoyod_client_body,
       { "API-KEY": options.data.serviceApiKey }
-    );
+    )) as unknown as { contact: QoyodClientResult };
 
     // console.log(result);
 
