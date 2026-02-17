@@ -16,6 +16,18 @@ interface Headers {
   [key: string]: string;
 }
 
+interface QoyodApiResponse {
+  pagination?: {
+    totalPages?: number;
+  };
+  products?: any[];
+  invoices?: any[];
+  categories?: any[];
+  customers?: any[];
+  inventories?: any[];
+  product_unit_types?: any[];
+}
+
 export const _fetch = async (
   baseUrl: string,
   path: string,
@@ -153,7 +165,7 @@ export const get_data_from_qoyod = async ({
       let QUERY = query ? query : "";
       if (QUERY && !QUERY.startsWith("?")) QUERY = "?" + QUERY;
       try {
-        const result = await _fetch(
+        const result: QoyodApiResponse = await _fetch(
           serviceEndPoint,
           `/${_path}${QUERY}${
             QUERY ? "&" : "?"
@@ -163,9 +175,10 @@ export const get_data_from_qoyod = async ({
         if (result?.pagination?.totalPages) {
           total_pages = result.pagination.totalPages;
         }
-        if (result && result[entityName] && result[entityName].length > 0) {
+        const entityData = result[entityName];
+        if (result && entityData && entityData.length > 0) {
           if (page > 1 && check_getting_same_page_data_each_loop) {
-            const first_doc_in_page_2 = result[entityName][0];
+            const first_doc_in_page_2 = entityData[0];
             const has_matching_doc_in_page_1 = all_data.some(
               (item) => item.id === first_doc_in_page_2.id
             );
@@ -178,12 +191,12 @@ export const get_data_from_qoyod = async ({
               check_getting_same_page_data_each_loop = false; // if the data in page 2 is different than page 1, then we can continue as normal
             }
           }
-          result[entityName].forEach((item: any) => {
+          entityData.forEach((item: any) => {
             all_data.push(item);
           });
           if (
-            result[entityName].length < DEFAULT_PER_PAGE ||
-            result[entityName].length > DEFAULT_PER_PAGE
+            entityData.length < DEFAULT_PER_PAGE ||
+            entityData.length > DEFAULT_PER_PAGE
           ) {
             break; // No more data to fetch
           }
