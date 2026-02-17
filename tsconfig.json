@@ -2,11 +2,13 @@
   "compilerOptions": {
     "target": "es2018",
     "module": "ES6",
+    "lib": ["ES2018"],
     "declaration": true,
     "outDir": "./lib",
     "strict": true,
     "noImplicitThis": false,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "moduleResolution": "Node"
   },
   "ts-node": { "esm": true },
