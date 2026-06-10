@@ -109,9 +109,16 @@ export const create_creditNote = async (event: EVENT, options: Config) => {
         product_id: repzo_variant?.integration_meta?.qoyod_id,
         description: "",
         quantity: Math.abs(repzo_item.qty),
+        // return_price_float is only populated by the calculator SDK when the
+        // return is calculated with deduction; on the standard return path it is
+        // null, which would make unit_price 0. Fall back to the discounted (then
+        // base) price so the credit note carries the real line prices. Uses ??
+        // (not ||) so a genuinely free line (price 0) stays 0.
         unit_price:
           ((repzo_item?.measureunit?.factor || 1) *
-            repzo_item.return_price_float) /
+            (repzo_item.return_price_float ??
+              repzo_item.discounted_price_float ??
+              repzo_item.price)) /
           1000,
         unit_type: repzo_measureunit?.integration_meta?.qoyod_id,
         // discount: repzo_item.discount_value,
